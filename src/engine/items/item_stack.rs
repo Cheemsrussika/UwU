@@ -1,6 +1,6 @@
 use super::item_type::ItemType;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(bevy::prelude::Component, Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ItemStack {
     pub item: ItemType,
     pub count: u32,

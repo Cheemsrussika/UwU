@@ -19,7 +19,8 @@ pub fn step_physics_and_mining(
 ) {
     let is_mining = mining_state.is_active;
     player.update_physics(move_input, jump_input, sneak_input, sprint_input, is_mining, aim_yaw, dt, world);
-    items.update(dt, world);
+    items.update(dt, world, player.position);
+    crate::engine::mobs::resolve_player_animals_collision(player, &mut items.animals);
     let picked = items.try_pickup(player.position, inventory);
     if !picked.is_empty() {
         let _ = block_tx.send(crate::network::Packet::ClientboundRemoveEntities { entity_ids: picked });
@@ -27,10 +28,14 @@ pub fn step_physics_and_mining(
 
     if let Some(target) = mining_state.target {
         let b = world.get_block(target.0, target.1, target.2);
-        if mining_state.update(dt, b, player.held_item) {
+        if mining_state.update_with_gamemode(dt, b, player.held_item, player.game_mode) {
             let drop_pos = Vec3::new(target.0 as f32 + 0.5, target.1 as f32 + 0.5, target.2 as f32 + 0.5);
-            if MiningState::can_harvest(b, player.held_item) {
-                let drop_block = match b { BlockType::Grass => BlockType::Dirt, other => other };
+            if !player.game_mode.is_creative() && MiningState::can_harvest(b, player.held_item) {
+                let drop_block = match b {
+                    BlockType::Grass => BlockType::Dirt,
+                    BlockType::Stone => BlockType::Cobblestone,
+                    other => other,
+                };
                 let it_type = ItemType::Block(drop_block);
                 let id = items.spawn(drop_pos, Vec3::new(0.0, 2.5, 0.0), ItemStack::new(it_type, 1));
                 let _ = block_tx.send(crate::network::Packet::ClientboundSpawnItem {

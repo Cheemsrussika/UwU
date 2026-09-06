@@ -7,7 +7,7 @@ pub const CHUNK_SIZE_X: usize = SECTION_SIZE;
 pub const CHUNK_SIZE_Y: usize = SECTION_SIZE;
 pub const CHUNK_SIZE_Z: usize = SECTION_SIZE;
 
-#[derive(Clone)]
+#[derive(bevy::prelude::Component, Clone)]
 pub struct Chunk {
     pub coords: (i32, i32, i32),
     pub section: LevelChunkSection,

@@ -32,7 +32,7 @@ fn test_dropped_item_physics_and_pickup() {
     assert_eq!(manager.items.len(), 1);
 
     for _ in 0..60 {
-        manager.update(0.05, &world);
+        manager.update(0.05, &world, Vec3::ZERO);
     }
     assert!(manager.items[0].on_ground);
     let item_pos = manager.items[0].position;

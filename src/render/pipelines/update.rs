@@ -82,9 +82,11 @@ pub fn update_renderer_snapshot(
     }
 
     let profiler_param = snapshot.profiler_piechart.as_ref().map(|(f, p)| (f.as_slice(), p.as_str()));
+    let hud_health = if snapshot.game_mode.show_hud_bars() { snapshot.health } else { -1.0 };
     update_hud_mesh(
-        &mut r.hud_renderer, &r.device, snapshot.health, snapshot.stamina, snapshot.hunger,
+        &mut r.hud_renderer, &r.device, hud_health, snapshot.stamina, snapshot.hunger,
         &snapshot.hotbar_items, &snapshot.all_slots, snapshot.inventory_open, snapshot.selected_slot,
         snapshot.carried_item, snapshot.mouse_ndc, profiler_param, aspect,
+        snapshot.game_mode.is_creative(),
     );
 }

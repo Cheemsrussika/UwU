@@ -42,7 +42,7 @@ pub fn compute_fluid_update(
         }
     }
 
-    if current != BlockType::WaterSource && source_count >= 2 && below_b.is_solid() {
+    if current != BlockType::WaterSource && source_count >= 2 && (below_b.is_solid() || below_b == BlockType::WaterSource) {
         return (BlockType::WaterSource, spread_positions);
     }
 

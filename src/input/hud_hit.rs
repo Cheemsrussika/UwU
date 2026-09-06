@@ -17,7 +17,7 @@ impl HudZone {
 
         if inventory_open {
             let s = 0.0065f32;
-            let win_w = 176.0 * s / aspect;
+            let win_w = 195.0 * s / aspect;
             let win_h = 166.0 * s;
             let win_x = -win_w * 0.5;
             let win_y = -win_h * 0.5;

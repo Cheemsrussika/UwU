@@ -24,7 +24,11 @@ pub fn handle_mouse_action(
         mining_state.set_mining(None, false);
         if !is_pressed { return; }
         if inventory.is_open {
-            if let Some(slot) = HudZone::get_clicked_inventory_slot(mouse_pos.0, mouse_pos.1, screen_size.0, screen_size.1) {
+            if player.game_mode.is_creative() {
+                if let Some(act) = crate::input::creative_hit::get_clicked_creative_slot(mouse_pos.0, mouse_pos.1, screen_size.0, screen_size.1) {
+                    crate::input::creative_clicks::handle_creative_slot_click(inventory, act, button == MouseButton::Right, is_shift);
+                }
+            } else if let Some(slot) = HudZone::get_clicked_inventory_slot(mouse_pos.0, mouse_pos.1, screen_size.0, screen_size.1) {
                 inventory.click_slot(slot, button == MouseButton::Right, is_shift);
             }
         } else if button == MouseButton::Left {
@@ -44,7 +48,16 @@ pub fn handle_mouse_action(
             MouseButton::Right => {
                 if is_pressed {
                     if let Some((_, place_p, _)) = hit {
-                        if let Some(selected) = inventory.consume_selected() {
+                        let block_to_place = if player.game_mode.is_creative() {
+                            inventory.hotbar[inventory.selected_slot].as_ref().and_then(|s| match s.item {
+                                crate::engine::items::ItemType::Block(b) => Some(b),
+                                crate::engine::items::ItemType::WaterBucket => Some(BlockType::WaterSource),
+                                _ => None,
+                            })
+                        } else {
+                            inventory.consume_selected()
+                        };
+                        if let Some(selected) = block_to_place {
                             world.set_block(place_p.0, place_p.1, place_p.2, selected);
                             let _ = block_tx.send(crate::network::Packet::ClientboundBlockUpdate {
                                 x: place_p.0, y: place_p.1, z: place_p.2,

@@ -4,9 +4,9 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use bevy::math::Vec3;
-use crate::engine::{Camera, Inventory, ItemEntityManager, Player, RenderSnapshot, TickSystem};
+use crate::engine::RenderSnapshot;
 use crate::input::LogicCommand;
-use crate::world::{BlockType, FluidSimulator, VoxelWorld, WorldAutosaver};
+use crate::world::{VoxelWorld, WorldAutosaver};
 
 pub struct LogicWorker;
 
@@ -28,12 +28,7 @@ impl LogicWorker {
                 }
                 *world_storage.lock().unwrap() = Some(world.storage.clone());
                 let autosaver = WorldAutosaver::start(world.storage.clone());
-                let mut player = Player::new(0.0, 6.0, 0.0);
-                let mut camera = Camera::new();
-                let mut inventory = Inventory::new();
-                let mut items = ItemEntityManager::new();
-                let mut tick_system: TickSystem<BlockType> = TickSystem::new(20.0);
-                FluidSimulator::schedule_initial_water(&world, &mut tick_system);
+                let (mut player, mut camera, mut inventory, mut items, mut tick_system) = super::worker_init::init_logic_entities(&world);
 
                 player.held_item = inventory.hotbar[inventory.selected_slot].as_ref().map(|s| s.item);
                 let snap = RenderSnapshot::capture(&mut world, &player, &camera, &inventory, &items, true);
@@ -53,7 +48,7 @@ impl LogicWorker {
                     profiler.push("commands");
                     while let Ok(cmd) = cmd_rx.try_recv() {
                         super::worker_commands::handle_worker_command(
-                            cmd, &mut world, &player, &mut camera, &mut inventory, &mut items, &mut move_input,
+                            cmd, &mut world, &mut player, &mut camera, &mut inventory, &mut items, &mut move_input,
                             &mut jump_input, &mut sneak_input, &mut sprint_input, &mut aim_yaw, &mut mouse_ndc, &mut aspect,
                             &mut current_hovered_block, &mut mining_state, &mut tick_system,
                             &mut show_chunk_borders, &mut piechart_state, &profiler, &block_tx,

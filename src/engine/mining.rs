@@ -36,33 +36,29 @@ impl MiningState {
     }
 
     pub fn can_harvest(block: BlockType, held_item: Option<ItemType>) -> bool {
-        match block {
-            BlockType::Stone => matches!(held_item, Some(ItemType::DiamondPickaxe)),
-            _ => true,
-        }
+        super::mining_calc::can_harvest_block(block, held_item)
     }
 
     pub fn update(&mut self, dt: f32, block: BlockType, held_item: Option<ItemType>) -> bool {
+        self.update_with_gamemode(dt, block, held_item, crate::engine::GameMode::Survival)
+    }
+
+    pub fn update_with_gamemode(
+        &mut self, dt: f32, block: BlockType, held_item: Option<ItemType>, mode: crate::engine::GameMode,
+    ) -> bool {
         if !self.is_active || !block.is_solid() {
             self.progress = 0.0;
             return false;
         }
+        if mode.instant_break() {
+            self.progress = 0.0;
+            self.is_active = false;
+            return true;
+        }
 
-        let hardness = match block {
-            BlockType::Grass => 0.6,
-            BlockType::Dirt => 0.5,
-            BlockType::Stone => 1.5,
-            BlockType::Wood | BlockType::OakLog | BlockType::OakPlanks => 2.0,
-            BlockType::OakLeaves => 0.2,
-            _ => 1.0,
-        };
-
+        let hardness = super::mining_calc::get_block_hardness(block);
         let can_harvest = Self::can_harvest(block, held_item);
-        let tool_speed = match (block, held_item) {
-            (BlockType::Stone, Some(ItemType::DiamondPickaxe)) => 8.0,
-            (BlockType::OakLeaves, Some(ItemType::DiamondSword)) => 1.5,
-            _ => 1.0,
-        };
+        let tool_speed = super::mining_calc::get_tool_speed(block, held_item);
 
         let modifier: f32 = if can_harvest { 30.0 } else { 100.0 };
         let progress_per_sec = (tool_speed / hardness / modifier) * 20.0;

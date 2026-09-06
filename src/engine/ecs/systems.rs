@@ -1,7 +1,5 @@
 use bevy::prelude::*;
-use bevy::math::Vec3;
 use super::components::*;
-use crate::engine::Inventory;
 use crate::world::VoxelWorld;
 
 pub fn update_item_physics_and_lifetime(
@@ -22,11 +20,22 @@ pub fn update_item_physics_and_lifetime(
         if pickup_delay.0 > 0.0 {
             pickup_delay.0 = (pickup_delay.0 - dt).max(0.0);
         }
-        if !grounded.0 {
-            vel.0.y -= 12.0 * dt;
+        let in_water = voxel_world.get_block(pos.0.x.floor() as i32, pos.0.y.floor() as i32, pos.0.z.floor() as i32).is_fluid();
+        if in_water {
+            vel.0.y = (vel.0.y + 7.0 * dt).min(1.5);
+            vel.0.x *= (1.0 - 4.0 * dt).max(0.0);
+            vel.0.z *= (1.0 - 4.0 * dt).max(0.0);
+            let (fx, fz) = crate::world::compute_water_flow_vector(
+                pos.0.x.floor() as i32, pos.0.y.floor() as i32, pos.0.z.floor() as i32,
+                |x, y, z| voxel_world.get_block(x, y, z),
+            );
+            vel.0.x += fx * 3.5 * dt;
+            vel.0.z += fz * 3.5 * dt;
+        } else {
+            if !grounded.0 { vel.0.y -= 12.0 * dt; }
+            vel.0.x *= (1.0 - 2.0 * dt).max(0.0);
+            vel.0.z *= (1.0 - 2.0 * dt).max(0.0);
         }
-        vel.0.x *= (1.0 - 2.0 * dt).max(0.0);
-        vel.0.z *= (1.0 - 2.0 * dt).max(0.0);
 
         let next_pos = pos.0 + vel.0 * dt;
         let bx = next_pos.x.floor() as i32;
@@ -48,49 +57,7 @@ pub fn update_item_physics_and_lifetime(
     let mut expired = Vec::new();
     let mut age_query = ecs_world.query::<(Entity, &ItemAge)>();
     for (entity, age) in age_query.iter(ecs_world) {
-        if age.0 >= 300.0 {
-            expired.push(entity);
-        }
+        if age.0 >= 300.0 { expired.push(entity); }
     }
-    for entity in expired {
-        let _ = ecs_world.despawn(entity);
-    }
-}
-
-pub fn process_item_pickup(
-    ecs_world: &mut World,
-    player_pos: Vec3,
-    inv: &mut Inventory,
-) -> Vec<i32> {
-    let mut picked_up_ids = Vec::new();
-    let mut to_despawn = Vec::new();
-
-    let mut query = ecs_world.query::<(
-        Entity,
-        &ItemEntityId,
-        &Position,
-        &mut ItemPayload,
-        &PickupDelay,
-    )>();
-
-    for (entity, id, pos, mut payload, delay) in query.iter_mut(ecs_world) {
-        if delay.0 > 0.0 {
-            continue;
-        }
-        let d = pos.0.distance(player_pos + Vec3::new(0.0, 0.9, 0.0));
-        if d < 1.75 {
-            let remaining = inv.add_stack(&payload.0);
-            if remaining == 0 {
-                picked_up_ids.push(id.0);
-                to_despawn.push(entity);
-            } else {
-                payload.0.count = remaining;
-            }
-        }
-    }
-
-    for entity in to_despawn {
-        let _ = ecs_world.despawn(entity);
-    }
-    picked_up_ids
+    for entity in expired { let _ = ecs_world.despawn(entity); }
 }

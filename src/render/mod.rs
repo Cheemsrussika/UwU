@@ -1,3 +1,8 @@
+pub mod atlas_destroy;
+pub mod atlas_layers_blocks;
+pub mod atlas_layers_items;
+pub mod atlas_layers_tools_blocks;
+pub mod texture_loader;
 pub mod chunk_border_mesh;
 pub mod destroy_overlay;
 pub mod hud_ui;

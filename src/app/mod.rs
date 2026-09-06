@@ -4,6 +4,7 @@ pub mod app_init;
 pub mod app_state;
 pub mod game_state;
 pub mod key_events;
+pub mod key_shortcuts;
 pub mod lan_sync;
 pub mod logic_step;
 pub mod logic_worker;
@@ -16,6 +17,8 @@ pub mod render_movement;
 pub mod text_input;
 pub mod plugins;
 pub mod worker_commands;
+pub mod worker_init;
+pub mod worker_remote_cmds;
 pub mod worker_snapshot;
 pub mod worker_tick;
 

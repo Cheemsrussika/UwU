@@ -25,46 +25,32 @@ pub fn handle_keyboard_input(app: &mut App, key: KeyCode, pressed: bool, event_l
     }
 
     if let Some(tx) = &app.command_tx {
+        if super::key_shortcuts::handle_hotbar_or_profiler(tx, key, shift_down) {
+            return;
+        }
+        let f3_down = app.keys_pressed.get(&KeyCode::F3).copied().unwrap_or(false);
+        if f3_down && key == KeyCode::F4 {
+            let _ = tx.send(LogicCommand::ToggleGameMode);
+            return;
+        }
         match key {
             KeyCode::F3 => { let _ = tx.send(LogicCommand::TogglePieChart); }
+            KeyCode::F4 => { let _ = tx.send(LogicCommand::ToggleGameMode); }
+            KeyCode::KeyF => { let _ = tx.send(LogicCommand::ToggleFlight); }
+            KeyCode::Space => {
+                let now = std::time::Instant::now();
+                if let Some(last) = app.last_space_time {
+                    if now.duration_since(last).as_millis() < 300 {
+                        let _ = tx.send(LogicCommand::ToggleFlight);
+                        app.last_space_time = None;
+                    } else {
+                        app.last_space_time = Some(now);
+                    }
+                } else {
+                    app.last_space_time = Some(now);
+                }
+            }
             KeyCode::KeyG => { let _ = tx.send(LogicCommand::ToggleChunkBorders); }
-            KeyCode::Digit0 => { let _ = tx.send(LogicCommand::ProfilerNavigate(0)); }
-            KeyCode::Digit1 => {
-                if shift_down { let _ = tx.send(LogicCommand::ProfilerNavigate(1)); }
-                else { let _ = tx.send(LogicCommand::SelectSlot(0)); }
-            }
-            KeyCode::Digit2 => {
-                if shift_down { let _ = tx.send(LogicCommand::ProfilerNavigate(2)); }
-                else { let _ = tx.send(LogicCommand::SelectSlot(1)); }
-            }
-            KeyCode::Digit3 => {
-                if shift_down { let _ = tx.send(LogicCommand::ProfilerNavigate(3)); }
-                else { let _ = tx.send(LogicCommand::SelectSlot(2)); }
-            }
-            KeyCode::Digit4 => {
-                if shift_down { let _ = tx.send(LogicCommand::ProfilerNavigate(4)); }
-                else { let _ = tx.send(LogicCommand::SelectSlot(3)); }
-            }
-            KeyCode::Digit5 => {
-                if shift_down { let _ = tx.send(LogicCommand::ProfilerNavigate(5)); }
-                else { let _ = tx.send(LogicCommand::SelectSlot(4)); }
-            }
-            KeyCode::Digit6 => {
-                if shift_down { let _ = tx.send(LogicCommand::ProfilerNavigate(6)); }
-                else { let _ = tx.send(LogicCommand::SelectSlot(5)); }
-            }
-            KeyCode::Digit7 => {
-                if shift_down { let _ = tx.send(LogicCommand::ProfilerNavigate(7)); }
-                else { let _ = tx.send(LogicCommand::SelectSlot(6)); }
-            }
-            KeyCode::Digit8 => {
-                if shift_down { let _ = tx.send(LogicCommand::ProfilerNavigate(8)); }
-                else { let _ = tx.send(LogicCommand::SelectSlot(7)); }
-            }
-            KeyCode::Digit9 => {
-                if shift_down { let _ = tx.send(LogicCommand::ProfilerNavigate(9)); }
-                else { let _ = tx.send(LogicCommand::SelectSlot(8)); }
-            }
             KeyCode::KeyE => { let _ = tx.send(LogicCommand::ToggleInventory); }
             KeyCode::KeyZ => { let _ = tx.send(LogicCommand::PrevSlot); }
             KeyCode::KeyX => { let _ = tx.send(LogicCommand::NextSlot); }

@@ -11,6 +11,7 @@ pub fn build_dropped_item_mesh(item: &DroppedItem, vertices: &mut Vec<Vertex>, i
     let rot = |v: Vec3| Vec3::new(v.x * c - v.z * s, v.y, v.x * s + v.z * c);
 
     match item.item.item {
+        ItemType::Block(BlockType::Torch) => build_flat_item(item.item.item, center, rot, vertices, indices),
         ItemType::Block(b) => build_mini_block(b, center, rot, vertices, indices),
         other => build_flat_item(other, center, rot, vertices, indices),
     }
@@ -30,16 +31,11 @@ fn build_mini_block<F: Fn(Vec3) -> Vec3>(
     ];
     let uvs = [[0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]];
 
-    for (f_i, (norm, corners)) in faces.iter().enumerate() {
+    for (norm, corners) in faces.iter() {
         let base_idx = v.len() as u32;
         let r_norm = rot(*norm);
-        let layer = if b == BlockType::Grass {
-            if f_i == 0 { 0.0 } else if f_i == 1 { 1.0 } else { 7.0 }
-        } else if b == BlockType::OakLog {
-            if f_i == 0 || f_i == 1 { 15.0 } else { 14.0 }
-        } else {
-            b.tex_layer()
-        };
+        let offset = (norm.x as i32, norm.y as i32, norm.z as i32);
+        let layer = crate::world::face_texture::compute_face_texture(b, offset, false, 4.0, b.tex_layer());
         for (i, p) in corners.iter().enumerate() {
             v.push(Vertex {
                 position: (center + rot(*p)).to_array(),

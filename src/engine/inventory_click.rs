@@ -1,6 +1,5 @@
 use crate::engine::items::ItemStack;
 use crate::engine::Inventory;
-use crate::world::block::BlockType;
 
 pub fn handle_slot_click(inv: &mut Inventory, slot_idx: usize, is_right: bool, is_shift: bool) {
     if slot_idx >= 46 { return; }
@@ -77,16 +76,13 @@ fn handle_result_pickup(inv: &mut Inventory) {
     if let Some(res) = inv.result.take() {
         if inv.carried_item.is_none() {
             inv.carried_item = Some(res);
-            for c in &mut inv.craft {
-                if let Some(s) = c { if s.count <= 1 { *c = None; } else { s.count -= 1; } }
-            }
-        } else { inv.result = Some(res); }
+            crate::engine::crafting::consume_crafting_grid(&mut inv.craft);
+        } else {
+            inv.result = Some(res);
+        }
     }
 }
 
 fn update_crafting(inv: &mut Inventory) {
-    let ne: Vec<_> = inv.craft.iter().filter_map(|s| *s).collect();
-    inv.result = if ne.len() == 1 && ne[0].item == crate::engine::items::ItemType::Block(BlockType::OakLog) {
-        Some(ItemStack::new(crate::engine::items::ItemType::Block(BlockType::OakPlanks), 4))
-    } else { None };
+    inv.result = crate::engine::crafting::match_crafting_grid(&inv.craft, 2, 2);
 }

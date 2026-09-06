@@ -32,4 +32,6 @@ pub enum LogicCommand {
     RemoteChunkData { x: i32, y: i32, z: i32, runs: Vec<(u16, u8)> },
     RemoteSpawnItem { entity_id: i32, pos: Vec3, item_type: u8, count: u32 },
     RemoteRemoveEntities { entity_ids: Vec<i32> },
+    ToggleGameMode,
+    ToggleFlight,
 }

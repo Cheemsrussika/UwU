@@ -1,12 +1,12 @@
 use bevy::math::Vec3;
 use crate::engine::{Camera, Inventory, Player, TickSystem};
 use crate::input::{HudZone, LogicCommand};
-use crate::world::{block_from_u8, apply_chunk_runs, BlockType, Chunk, VoxelWorld};
+use crate::world::{BlockType, VoxelWorld};
 
 pub fn handle_worker_command(
     cmd: LogicCommand,
     world: &mut VoxelWorld,
-    player: &Player,
+    player: &mut Player,
     camera: &mut Camera,
     inventory: &mut Inventory,
     items: &mut crate::engine::ItemEntityManager,
@@ -64,33 +64,22 @@ pub fn handle_worker_command(
                 inventory, mining_state, world, camera, player, tick_system, block_tx,
             );
         }
-        LogicCommand::RemoteBlockChange { x, y, z, block_type } => {
-            let bt = block_from_u8(block_type);
-            world.set_block(x, y, z, bt);
+        LogicCommand::ToggleGameMode => {
+            player.game_mode = match player.game_mode {
+                crate::engine::GameMode::Survival => crate::engine::GameMode::Creative,
+                crate::engine::GameMode::Creative => crate::engine::GameMode::Survival,
+                other => other,
+            };
+            if !player.game_mode.can_fly() { player.is_flying = false; }
         }
-        LogicCommand::RemoteChunkData { x, y, z, runs } => {
-            let coords = (x, y, z);
-            let exists = world.storage.get_chunk_write(&coords, |chunk| {
-                apply_chunk_runs(chunk, &runs);
-                chunk.disk_dirty = false;
-                chunk.is_dirty = true;
-            }).is_some();
-            if !exists {
-                let mut chunk = Chunk::new(coords);
-                apply_chunk_runs(&mut chunk, &runs);
-                chunk.disk_dirty = false;
-                chunk.is_dirty = true;
-                world.storage.insert(coords, chunk);
-            }
-            world.needs_mesh_rebuild = true;
-        }
-        LogicCommand::RemoteSpawnItem { entity_id, pos, item_type, count } => {
-            if let Some(it) = crate::engine::items::item_from_u8(item_type) {
-                items.spawn_with_id(entity_id, pos, Vec3::ZERO, crate::engine::ItemStack::new(it, count));
+        LogicCommand::ToggleFlight => {
+            if player.game_mode.can_fly() {
+                player.is_flying = !player.is_flying;
+                if player.is_flying { player.velocity.y = 0.0; }
             }
         }
-        LogicCommand::RemoteRemoveEntities { entity_ids } => {
-            items.remove_many_by_id(&entity_ids);
+        other => {
+            super::worker_remote_cmds::handle_remote_command(&other, world, items);
         }
     }
 }

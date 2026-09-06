@@ -3,6 +3,8 @@ use bevy::prelude::Component;
 use crate::render::types::Vertex;
 use crate::world::VoxelWorld;
 
+pub use super::collision::check_player_collision;
+
 #[derive(Component, Clone, Debug)]
 pub struct Player {
     pub position: Vec3,
@@ -15,12 +17,21 @@ pub struct Player {
     pub health: f32,
     pub stamina: f32,
     pub hunger: f32,
+    pub saturation: f32,
+    pub exhaustion: f32,
+    pub hunger_timer: f32,
+    pub xp_level: u32,
+    pub xp_points: u32,
+    pub xp_total: u32,
+    pub fall_distance: f32,
     pub walk_time: f32,
     pub walk_speed: f32,
     pub is_sneaking: bool,
     pub is_sprinting: bool,
     pub mining_swing: f32,
     pub held_item: Option<crate::engine::items::ItemType>,
+    pub game_mode: crate::engine::GameMode,
+    pub is_flying: bool,
 }
 
 impl Player {
@@ -28,9 +39,12 @@ impl Player {
         Self {
             position: Vec3::new(x, y, z), velocity: Vec3::ZERO, yaw: 0.0,
             on_ground: false, in_water: false, width: 0.35, height: 1.8,
-            health: 100.0, stamina: 100.0, hunger: 90.0,
-            walk_time: 0.0, walk_speed: 0.0, is_sneaking: false,
-            is_sprinting: false, mining_swing: 0.0, held_item: None,
+            health: 20.0, stamina: 100.0, hunger: 20.0, saturation: 5.0,
+            exhaustion: 0.0, hunger_timer: 0.0, xp_level: 0, xp_points: 0,
+            xp_total: 0, fall_distance: 0.0, walk_time: 0.0, walk_speed: 0.0,
+            is_sneaking: false, is_sprinting: false, mining_swing: 0.0,
+            held_item: None, game_mode: crate::engine::GameMode::Survival,
+            is_flying: false,
         }
     }
 
@@ -46,24 +60,23 @@ impl Player {
             self.mining_swing = 0.0;
         }
         super::physics::update_player_movement(self, move_input, jump, sprint, aim_yaw, dt, world);
+        super::stats_update::tick_player_stats(self, dt);
+    }
+
+    pub fn eat(&mut self, item: crate::engine::items::ItemType) -> bool {
+        super::stats_update::eat_player_food(self, item)
+    }
+
+    pub fn add_xp(&mut self, amount: u32) {
+        super::stats_update::add_player_xp(self, amount);
+    }
+
+    pub fn xp_progress(&self) -> f32 {
+        let needed = crate::engine::stats::Experience::xp_needed_for_level(self.xp_level);
+        if needed == 0 { 0.0 } else { (self.xp_points as f32 / needed as f32).clamp(0.0, 1.0) }
     }
 
     pub fn mesh(&self) -> (Vec<Vertex>, Vec<u32>) {
         super::mesh::build_player_mesh(self)
     }
-}
-
-pub fn check_player_collision(pos: Vec3, width: f32, height: f32, world: &VoxelWorld) -> bool {
-    let (min_x, max_x) = ((pos.x - width).floor() as i32, (pos.x + width - 0.0001).floor() as i32);
-    let (min_y, max_y) = (pos.y.floor() as i32, (pos.y + height - 0.0001).floor() as i32);
-    let (min_z, max_z) = ((pos.z - width).floor() as i32, (pos.z + width - 0.0001).floor() as i32);
-
-    for x in min_x..=max_x {
-        for y in min_y..=max_y {
-            for z in min_z..=max_z {
-                if world.get_block(x, y, z).is_solid() { return true; }
-            }
-        }
-    }
-    false
 }

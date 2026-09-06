@@ -1,9 +1,13 @@
 pub mod dropped_item;
 pub mod item_id;
+pub mod item_layers;
 pub mod item_mesh;
+pub mod item_names;
+pub mod item_props;
 pub mod item_stack;
 pub mod item_type;
 pub mod manager;
+pub mod manager_ops;
 
 pub use dropped_item::DroppedItem;
 pub use item_id::{item_from_u8, item_to_u8};

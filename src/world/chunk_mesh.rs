@@ -30,6 +30,9 @@ where
                 if block == BlockType::Air { continue; }
                 let (gx, gy, gz) = (bx + lx as i32, by + ly as i32, bz + lz as i32);
                 let base = Vec3::new(gx as f32, gy as f32, gz as f32);
+                if super::custom_block_mesh::append_custom_block_mesh(block, base, &mut vertices, &mut indices) {
+                    continue;
+                }
                 let is_water = block.is_fluid();
                 let tex_layer = block.tex_layer();
                 let ch = if is_water { compute_water_corner_heights(gx, gy, gz, &mut get_world_block) } else { [1.0; 4] };
@@ -45,15 +48,7 @@ where
                     let neighbor = get_world_block(gx + offset.0, gy + offset.1, gz + offset.2);
                     let draw = if is_water { !neighbor.is_fluid() } else { neighbor.is_transparent() };
                     if draw {
-                        let face_tex = if block == BlockType::Grass {
-                            if offset.1 == 1 { 0.0 } else if offset.1 == -1 { 1.0 } else { 7.0 }
-                        } else if block == BlockType::OakLog {
-                            if offset.1 != 0 { 15.0 } else { 14.0 }
-                        } else if is_water {
-                            if offset.1 == 1 { water_top_tex } else { 5.0 }
-                        } else {
-                            tex_layer
-                        };
+                        let face_tex = super::face_texture::compute_face_texture(block, *offset, is_water, water_top_tex, tex_layer);
                         let face_uvs = if is_water && offset.1 == 1 { water_uvs } else { uvs };
                         let s = vertices.len() as u32;
                         for (i, corner) in corners.iter().enumerate() {

@@ -40,16 +40,11 @@ pub fn add_held_block(
     ];
     let uvs = [[0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]];
 
-    for (f_i, (norm, corners)) in faces.iter().enumerate() {
+    for (norm, corners) in faces.iter() {
         let base_idx = v.len() as u32;
         let r_norm = (world_mat.transform_vector3(*norm)).normalize();
-        let layer = if b == BlockType::Grass {
-            if f_i == 0 { 0.0 } else if f_i == 1 { 1.0 } else { 7.0 }
-        } else if b == BlockType::OakLog {
-            if f_i == 0 || f_i == 1 { 15.0 } else { 14.0 }
-        } else {
-            b.tex_layer()
-        };
+        let offset = (norm.x as i32, norm.y as i32, norm.z as i32);
+        let layer = crate::world::face_texture::compute_face_texture(b, offset, false, 4.0, b.tex_layer());
         for (i, p) in corners.iter().enumerate() {
             v.push(Vertex {
                 position: world_mat.transform_point3(*p).to_array(),

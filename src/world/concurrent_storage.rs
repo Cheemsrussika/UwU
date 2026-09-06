@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::sync::RwLock;
 use super::chunk::Chunk;
 
+#[derive(bevy::prelude::Resource)]
 pub struct ConcurrentChunkStorage {
     shards: [RwLock<HashMap<(i32, i32, i32), Chunk>>; 16],
 }

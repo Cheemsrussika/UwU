@@ -4,6 +4,7 @@ use super::dropped_item::DroppedItem;
 use super::item_mesh::build_dropped_item_mesh;
 use super::item_stack::ItemStack;
 use crate::engine::ecs::*;
+use crate::engine::mobs::{build_animal_mesh, maybe_spawn_animals, tick_animals, Animal};
 use crate::engine::Inventory;
 use crate::render::types::Vertex;
 use crate::world::VoxelWorld;
@@ -13,6 +14,8 @@ pub struct ItemEntityManager {
     pub ecs_world: World,
     pub next_id: i32,
     pub items: Vec<DroppedItem>,
+    pub animals: Vec<(Animal, Vec3)>,
+    pub spawn_timer: f32,
 }
 
 impl Default for ItemEntityManager {
@@ -24,7 +27,7 @@ impl ItemEntityManager {
         let base = (std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_millis()).unwrap_or(1000) as i32 & 0x3FFFFFFF).max(1000);
-        Self { ecs_world: World::new(), next_id: base, items: Vec::new() }
+        Self { ecs_world: World::new(), next_id: base, items: Vec::new(), animals: Vec::new(), spawn_timer: 0.0 }
     }
 
     pub fn spawn(&mut self, pos: Vec3, vel: Vec3, item: ItemStack) -> i32 {
@@ -35,30 +38,19 @@ impl ItemEntityManager {
     }
 
     pub fn spawn_with_id(&mut self, id: i32, pos: Vec3, vel: Vec3, item: ItemStack) {
-        let mut query = self.ecs_world.query::<&ItemEntityId>();
-        if query.iter(&self.ecs_world).any(|ent_id| ent_id.0 == id) {
-            return;
-        }
-        let bob_offset = (pos.x * 13.0 + pos.z * 17.0).sin().abs() * 6.28;
-        self.ecs_world.spawn((
-            ItemEntityId(id), Position(pos), Velocity(vel), ItemPayload(item),
-            ItemAge(0.0), PickupDelay(0.5), Grounded(false), BobOffset(bob_offset),
-        ));
+        super::manager_ops::spawn_dropped_item(&mut self.ecs_world, id, pos, vel, item);
         self.sync_items();
     }
 
     pub fn remove_many_by_id(&mut self, ids: &[i32]) {
-        let mut to_despawn = Vec::new();
-        let mut query = self.ecs_world.query::<(Entity, &ItemEntityId)>();
-        for (e, ent_id) in query.iter(&self.ecs_world) {
-            if ids.contains(&ent_id.0) { to_despawn.push(e); }
-        }
-        for e in to_despawn { let _ = self.ecs_world.despawn(e); }
+        super::manager_ops::remove_dropped_items(&mut self.ecs_world, ids);
         self.sync_items();
     }
 
-    pub fn update(&mut self, dt: f32, world: &VoxelWorld) {
+    pub fn update(&mut self, dt: f32, world: &VoxelWorld, player_pos: Vec3) {
         update_item_physics_and_lifetime(&mut self.ecs_world, world, dt);
+        tick_animals(&mut self.ecs_world, world, player_pos, dt);
+        maybe_spawn_animals(&mut self.ecs_world, world, player_pos, &mut self.spawn_timer, dt);
         self.sync_items();
     }
 
@@ -80,9 +72,15 @@ impl ItemEntityManager {
                 age: age.0, bob_offset: bob.0, pickup_delay: delay.0, on_ground: grounded.0,
             });
         }
+        self.animals.clear();
+        let mut anim_query = self.ecs_world.query::<(&Animal, &Position)>();
+        for (animal, pos) in anim_query.iter(&self.ecs_world) {
+            self.animals.push((animal.clone(), pos.0));
+        }
     }
 
     pub fn build_mesh(&self, v: &mut Vec<Vertex>, idx: &mut Vec<u32>) {
         for item in &self.items { build_dropped_item_mesh(item, v, idx); }
+        for (animal, pos) in &self.animals { build_animal_mesh(animal, *pos, v, idx); }
     }
 }

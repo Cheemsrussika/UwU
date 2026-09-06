@@ -32,6 +32,7 @@ pub struct App {
     pub local_player_id: u64,
     pub block_event_rx: Option<mpsc::Receiver<crate::network::Packet>>,
     pub world_storage: Arc<Mutex<Option<Arc<ConcurrentChunkStorage>>>>,
+    pub last_space_time: Option<Instant>,
 }
 
 impl App {
@@ -57,6 +58,7 @@ impl App {
             local_player_id: 1,
             block_event_rx: None,
             world_storage: Arc::new(Mutex::new(None)),
+            last_space_time: None,
         }
     }
 }

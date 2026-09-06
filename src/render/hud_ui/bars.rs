@@ -46,31 +46,32 @@ pub fn draw_bars_and_crosshair(v: &mut Vec<HudVertex>, i: &mut Vec<u32>, health:
         add_textured_quad(v, i, xx, xy, xw * frac, xh, fg_rect, white);
     }
 
-    // 3. Minecraft 10-heart bar above hotbar (left side)
-    let (hw, hh, sp) = (0.028 / aspect, 0.028, 0.003 / aspect);
-    let h_start_x = -xw * 0.5;
-    let h_start_y = -0.79;
-    let half_hearts = ((health / 5.0).round() as i32).clamp(0, 20);
+    // 3. Minecraft 10-heart bar and 10-food hunger bar (hidden in Creative)
+    if health >= 0.0 {
+        let (hw, hh, sp) = (0.028 / aspect, 0.028, 0.003 / aspect);
+        let h_start_x = -xw * 0.5;
+        let h_start_y = -0.79;
+        let half_hearts = if health <= 20.0 { (health.round() as i32).clamp(0, 20) } else { ((health / 5.0).round() as i32).clamp(0, 20) };
 
-    for idx in 0..10 {
-        let x = h_start_x + (idx as f32) * (hw + sp);
-        add_textured_quad(v, i, x, h_start_y, hw, hh, HudAtlas::HEART_BG, white);
-        let heart_val = half_hearts - idx * 2;
-        if heart_val >= 2 {
-            add_textured_quad(v, i, x, h_start_y, hw, hh, HudAtlas::HEART_FULL, white);
-        } else if heart_val == 1 {
-            add_textured_quad(v, i, x, h_start_y, hw, hh, HudAtlas::HEART_HALF, white);
+        for idx in 0..10 {
+            let x = h_start_x + (idx as f32) * (hw + sp);
+            add_textured_quad(v, i, x, h_start_y, hw, hh, HudAtlas::HEART_BG, white);
+            let heart_val = half_hearts - idx * 2;
+            if heart_val >= 2 {
+                add_textured_quad(v, i, x, h_start_y, hw, hh, HudAtlas::HEART_FULL, white);
+            } else if heart_val == 1 {
+                add_textured_quad(v, i, x, h_start_y, hw, hh, HudAtlas::HEART_HALF, white);
+            }
         }
-    }
 
-    // 4. Minecraft 10-food hunger bar above hotbar (right side)
-    let food_count = ((hunger / 10.0).ceil() as i32).clamp(0, 10);
-    let f_start_x = xw * 0.5 - hw;
-    for idx in 0..10 {
-        let x = f_start_x - (idx as f32) * (hw + sp);
-        add_textured_quad(v, i, x, h_start_y, hw, hh, HudAtlas::FOOD_BG, white);
-        if idx < food_count {
-            add_textured_quad(v, i, x, h_start_y, hw, hh, HudAtlas::FOOD_FULL, white);
+        let food_count = if hunger <= 20.0 { ((hunger / 2.0).ceil() as i32).clamp(0, 10) } else { ((hunger / 10.0).ceil() as i32).clamp(0, 10) };
+        let f_start_x = xw * 0.5 - hw;
+        for idx in 0..10 {
+            let x = f_start_x - (idx as f32) * (hw + sp);
+            add_textured_quad(v, i, x, h_start_y, hw, hh, HudAtlas::FOOD_BG, white);
+            if idx < food_count {
+                add_textured_quad(v, i, x, h_start_y, hw, hh, HudAtlas::FOOD_FULL, white);
+            }
         }
     }
 }

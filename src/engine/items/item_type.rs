@@ -1,57 +1,59 @@
 use crate::world::block::BlockType;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(bevy::prelude::Component, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ItemType {
     Block(BlockType),
     Apple,
     Bread,
+    Porkchop,
+    CookedPorkchop,
+    Beef,
+    CookedBeef,
+    Mutton,
+    CookedMutton,
+    WhiteWool,
+    Leather,
+    Stick,
+    Coal,
+    IronIngot,
+    Diamond,
+    WoodenPickaxe,
+    StonePickaxe,
+    IronPickaxe,
+    DiamondPickaxe,
+    WoodenSword,
+    StoneSword,
+    IronSword,
+    DiamondSword,
+    WoodenAxe,
+    StoneAxe,
+    IronAxe,
+    DiamondAxe,
+    WoodenShovel,
+    StoneShovel,
+    IronShovel,
+    DiamondShovel,
+    WoodenHoe,
+    StoneHoe,
+    IronHoe,
+    DiamondHoe,
     Bucket,
     WaterBucket,
-    DiamondSword,
-    DiamondPickaxe,
 }
 
 impl ItemType {
     pub fn max_stack_size(&self) -> u32 {
-        match self {
-            ItemType::DiamondSword | ItemType::DiamondPickaxe => 1,
-            ItemType::Bucket | ItemType::WaterBucket => 16,
-            _ => 64,
-        }
+        if self.is_tool() { 1 }
+        else if matches!(self, ItemType::Bucket | ItemType::WaterBucket) { 16 }
+        else { 64 }
     }
 
     pub fn name(&self) -> &'static str {
-        match self {
-            ItemType::Block(b) => match b {
-                BlockType::Grass => "Grass Block",
-                BlockType::Dirt => "Dirt",
-                BlockType::Wood => "Wood",
-                BlockType::Stone => "Stone",
-                BlockType::WaterSource => "Water Block",
-                BlockType::OakLog => "Oak Log",
-                BlockType::OakPlanks => "Oak Planks",
-                BlockType::OakLeaves => "Oak Leaves",
-                _ => "Block",
-            },
-            ItemType::Apple => "Apple",
-            ItemType::Bread => "Bread",
-            ItemType::Bucket => "Bucket",
-            ItemType::WaterBucket => "Water Bucket",
-            ItemType::DiamondSword => "Diamond Sword",
-            ItemType::DiamondPickaxe => "Diamond Pickaxe",
-        }
+        super::item_props::item_name(self)
     }
 
     pub fn tex_layer(&self) -> f32 {
-        match self {
-            ItemType::Block(b) => b.tex_layer(),
-            ItemType::Apple => 8.0,
-            ItemType::Bread => 9.0,
-            ItemType::Bucket => 10.0,
-            ItemType::WaterBucket => 11.0,
-            ItemType::DiamondSword => 12.0,
-            ItemType::DiamondPickaxe => 13.0,
-        }
+        super::item_props::item_tex_layer(self)
     }
 
     pub fn is_block(&self) -> bool {
@@ -59,6 +61,14 @@ impl ItemType {
     }
 
     pub fn is_tool(&self) -> bool {
-        matches!(self, ItemType::DiamondSword | ItemType::DiamondPickaxe)
+        matches!(
+            self,
+            ItemType::WoodenPickaxe | ItemType::StonePickaxe | ItemType::IronPickaxe | ItemType::DiamondPickaxe
+            | ItemType::WoodenSword | ItemType::StoneSword | ItemType::IronSword | ItemType::DiamondSword
+            | ItemType::WoodenAxe | ItemType::StoneAxe | ItemType::IronAxe | ItemType::DiamondAxe
+            | ItemType::WoodenShovel | ItemType::StoneShovel | ItemType::IronShovel | ItemType::DiamondShovel
+            | ItemType::WoodenHoe | ItemType::StoneHoe | ItemType::IronHoe | ItemType::DiamondHoe
+        )
     }
 }
+

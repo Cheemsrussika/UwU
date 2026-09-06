@@ -6,10 +6,10 @@ edition = "2024"
 [dependencies]
 wgpu = "24.0"
 winit = { version = "0.30", features = ["rwh_06"] }
-glam = "0.29"
 pollster = "0.4"
 bytemuck = { version = "1.19", features = ["derive"] }
 env_logger = "0.11"
 log = "0.4"
 pathfinding = "4.14"
 image = { version = "0.25", default-features = false, features = ["png"] }
+bevy = { version = "0.19.1", default-features = false }

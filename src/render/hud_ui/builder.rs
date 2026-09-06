@@ -20,6 +20,7 @@ pub fn update_hud_mesh(
     mouse_ndc: (f32, f32),
     profiler_data: Option<(&[ResultField], &str)>,
     aspect: f32,
+    is_creative: bool,
 ) {
     let mut v = Vec::new();
     let mut i = Vec::new();
@@ -27,7 +28,11 @@ pub fn update_hud_mesh(
     draw_bars_and_crosshair(&mut v, &mut i, health, stamina, hunger, aspect);
     draw_hotbar_slots(&mut v, &mut i, hotbar, selected_slot, aspect);
     if inventory_open {
-        draw_inventory_window(&mut v, &mut i, all_slots, carried_item, mouse_ndc, aspect);
+        if is_creative {
+            super::creative_inventory::draw_creative_inventory_window(&mut v, &mut i, hotbar, carried_item, mouse_ndc, aspect);
+        } else {
+            draw_inventory_window(&mut v, &mut i, all_slots, carried_item, mouse_ndc, aspect);
+        }
     }
     if let Some((fields, path)) = profiler_data {
         draw_profiler_piechart(&mut v, &mut i, fields, path, aspect);

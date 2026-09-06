@@ -25,6 +25,7 @@ impl HudAtlas {
     pub const XP_BG: SpriteRect = Self::rect(0, 50, 182, 5);
     pub const XP_FG: SpriteRect = Self::rect(0, 56, 182, 5);
     pub const INVENTORY_BG: SpriteRect = Self::rect(0, 512, 352, 332);
+    pub const CREATIVE_INVENTORY_BG: SpriteRect = Self::rect(360, 512, 390, 272);
     pub const STEVE_SKIN: SpriteRect = Self::rect(512, 0, 64, 64);
     pub const BUTTON: SpriteRect = Self::rect(0, 200, 200, 20);
     pub const BUTTON_HL: SpriteRect = Self::rect(0, 225, 200, 20);
@@ -69,6 +70,8 @@ impl HudAtlas {
         Self::blit(&mut p, include_bytes!("../../../assets/textures/xp_fg.png"), 0, 56);
         Self::blit(&mut p, include_bytes!("../../../assets/textures/font/ascii.png"), 0, 64);
         super::atlas_items::blit_items_and_player(&mut p);
+        super::atlas_more_items::blit_survival_and_food_items(&mut p);
+        super::atlas_tools::blit_all_tool_sprites(&mut p);
         super::atlas_menu::blit_menu_textures(&mut p);
         p
     }

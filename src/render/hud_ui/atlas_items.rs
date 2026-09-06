@@ -50,4 +50,7 @@ pub fn blit_items_and_player(p: &mut [u8]) {
 
     // Inventory GUI background (2x scaled = 352x332) at (0, 512)
     blit_scaled(p, include_bytes!("../../../assets/textures/gui/container/inventory.png"), 0, 512, 2);
+
+    // Creative Inventory GUI background (2x scaled = 390x272) at (360, 512)
+    blit_scaled(p, include_bytes!("../../../assets/textures/gui/container/creative_inventory/tab_items.png"), 360, 512, 2);
 }

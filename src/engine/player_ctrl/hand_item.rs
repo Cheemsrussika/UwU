@@ -12,6 +12,9 @@ pub fn add_held_item(
     player_pos: Vec3,
 ) {
     match item {
+        ItemType::Block(crate::world::block::BlockType::Torch) => {
+            super::hand_tool::add_held_tool(v, idx, item, shoulder, arm_pitch, yaw, player_pos)
+        }
         ItemType::Block(b) => super::hand_block::add_held_block(v, idx, b, shoulder, arm_pitch, yaw, player_pos),
         other => super::hand_tool::add_held_tool(v, idx, other, shoulder, arm_pitch, yaw, player_pos),
     }
