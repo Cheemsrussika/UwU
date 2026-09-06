@@ -1,4 +1,4 @@
-use glam::Vec3;
+use bevy::math::Vec3;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Packet {
@@ -9,7 +9,9 @@ pub enum Packet {
         held_item: Option<u8>, is_sneaking: bool, is_sprinting: bool, mining_swing: f32,
     },
     ClientboundBlockUpdate { x: i32, y: i32, z: i32, block_type: u8 },
+    ClientboundChunkData { x: i32, y: i32, z: i32, runs: Vec<(u16, u8)> },
     ClientboundRemoveEntities { entity_ids: Vec<i32> },
+    ClientboundSpawnItem { entity_id: i32, pos: Vec3, item_type: u8, count: u32 },
 
     ServerboundHello { name: String },
     ServerboundMovePlayerPosRot {

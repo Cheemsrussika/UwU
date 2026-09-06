@@ -1,6 +1,7 @@
+use bevy::math::Vec3;
 use crate::engine::{Camera, Inventory, Player, TickSystem};
 use crate::input::{HudZone, LogicCommand};
-use crate::world::{BlockType, VoxelWorld};
+use crate::world::{block_from_u8, apply_chunk_runs, BlockType, Chunk, VoxelWorld};
 
 pub fn handle_worker_command(
     cmd: LogicCommand,
@@ -8,7 +9,8 @@ pub fn handle_worker_command(
     player: &Player,
     camera: &mut Camera,
     inventory: &mut Inventory,
-    move_input: &mut glam::Vec3,
+    items: &mut crate::engine::ItemEntityManager,
+    move_input: &mut Vec3,
     jump_input: &mut bool,
     sneak_input: &mut bool,
     sprint_input: &mut bool,
@@ -63,9 +65,32 @@ pub fn handle_worker_command(
             );
         }
         LogicCommand::RemoteBlockChange { x, y, z, block_type } => {
-            let bt = crate::world::block_from_u8(block_type);
+            let bt = block_from_u8(block_type);
             world.set_block(x, y, z, bt);
-            crate::world::save_chunk_at(world, VoxelWorld::world_to_chunk(x, y, z).0);
+        }
+        LogicCommand::RemoteChunkData { x, y, z, runs } => {
+            let coords = (x, y, z);
+            let exists = world.storage.get_chunk_write(&coords, |chunk| {
+                apply_chunk_runs(chunk, &runs);
+                chunk.disk_dirty = false;
+                chunk.is_dirty = true;
+            }).is_some();
+            if !exists {
+                let mut chunk = Chunk::new(coords);
+                apply_chunk_runs(&mut chunk, &runs);
+                chunk.disk_dirty = false;
+                chunk.is_dirty = true;
+                world.storage.insert(coords, chunk);
+            }
+            world.needs_mesh_rebuild = true;
+        }
+        LogicCommand::RemoteSpawnItem { entity_id, pos, item_type, count } => {
+            if let Some(it) = crate::engine::items::item_from_u8(item_type) {
+                items.spawn_with_id(entity_id, pos, Vec3::ZERO, crate::engine::ItemStack::new(it, count));
+            }
+        }
+        LogicCommand::RemoteRemoveEntities { entity_ids } => {
+            items.remove_many_by_id(&entity_ids);
         }
     }
 }

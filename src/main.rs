@@ -5,8 +5,6 @@ pub mod network;
 pub mod render;
 pub mod world;
 
-use app::App;
-use winit::event_loop::{ControlFlow, EventLoop};
 
 fn main() {
     env_logger::init();
@@ -30,8 +28,5 @@ fn main() {
     println!("  * ESC              : Thoát game");
     println!("============================================================");
 
-    let event_loop = EventLoop::new().unwrap();
-    event_loop.set_control_flow(ControlFlow::Poll);
-    let mut app = App::new();
-    let _ = event_loop.run_app(&mut app);
+    app::run_bevy_engine();
 }

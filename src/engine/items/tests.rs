@@ -1,4 +1,4 @@
-use glam::Vec3;
+use bevy::math::Vec3;
 use super::*;
 use crate::engine::Inventory;
 use crate::world::block::BlockType;
@@ -57,7 +57,7 @@ fn test_steve_player_mesh_generation() {
 
     for v in &verts {
         assert_eq!(v.tex_layer, 6.0);
-        let n = glam::Vec3::from_array(v.normal);
+        let n = Vec3::from_array(v.normal);
         assert!((n.length() - 1.0).abs() < 0.01);
     }
 
@@ -69,4 +69,16 @@ fn test_steve_player_mesh_generation() {
     p2.held_item = Some(ItemType::DiamondSword);
     let (vs, _) = p2.mesh();
     assert_eq!(vs.len(), 1136); // 144 body + 992 crisp extruded tool vertices
+}
+
+#[test]
+fn test_spawn_with_duplicate_id_ignored() {
+    let mut manager = ItemEntityManager::new();
+    let stack = ItemStack::new(ItemType::Apple, 1);
+    manager.spawn_with_id(42, Vec3::new(1.0, 2.0, 3.0), Vec3::ZERO, stack.clone());
+    assert_eq!(manager.items.len(), 1);
+
+    // Attempting to spawn same ID again (network echo) must be ignored
+    manager.spawn_with_id(42, Vec3::new(1.0, 2.0, 3.0), Vec3::ZERO, stack);
+    assert_eq!(manager.items.len(), 1);
 }

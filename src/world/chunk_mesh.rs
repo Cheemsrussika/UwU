@@ -2,7 +2,7 @@ use super::block::BlockType;
 use super::chunk::Chunk;
 use super::water_slope::compute_water_corner_heights;
 use crate::render::types::Vertex;
-use glam::Vec3;
+use bevy::math::Vec3;
 
 pub fn compute_chunk_mesh<F>(chunk: &Chunk, mut get_world_block: F) -> (Vec<Vertex>, Vec<u32>)
 where

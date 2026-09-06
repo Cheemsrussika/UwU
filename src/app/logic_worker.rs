@@ -3,9 +3,10 @@ use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
+use bevy::math::Vec3;
 use crate::engine::{Camera, Inventory, ItemEntityManager, Player, RenderSnapshot, TickSystem};
 use crate::input::LogicCommand;
-use crate::world::{BlockType, FluidSimulator, VoxelWorld};
+use crate::world::{BlockType, FluidSimulator, VoxelWorld, WorldAutosaver};
 
 pub struct LogicWorker;
 
@@ -15,6 +16,7 @@ impl LogicWorker {
         cmd_rx: mpsc::Receiver<LogicCommand>,
         block_tx: mpsc::Sender<crate::network::Packet>,
         running: Arc<AtomicBool>,
+        world_storage: Arc<Mutex<Option<Arc<crate::world::ConcurrentChunkStorage>>>>,
     ) -> thread::JoinHandle<()> {
         thread::Builder::new()
             .name("logic-worker".into())
@@ -24,6 +26,8 @@ impl LogicWorker {
                     world = VoxelWorld::new_flat(2);
                     crate::world::save_world_to_disk(&world);
                 }
+                *world_storage.lock().unwrap() = Some(world.storage.clone());
+                let autosaver = WorldAutosaver::start(world.storage.clone());
                 let mut player = Player::new(0.0, 6.0, 0.0);
                 let mut camera = Camera::new();
                 let mut inventory = Inventory::new();
@@ -35,7 +39,7 @@ impl LogicWorker {
                 let snap = RenderSnapshot::capture(&mut world, &player, &camera, &inventory, &items, true);
                 *snapshot_shared.lock().unwrap() = Some(snap);
 
-                let (mut move_input, mut jump_input, mut sneak_input, mut sprint_input) = (glam::Vec3::ZERO, false, false, false);
+                let (mut move_input, mut jump_input, mut sneak_input, mut sprint_input) = (Vec3::ZERO, false, false, false);
                 let (mut aim_yaw, mut mouse_ndc, mut current_hovered_block) = (None, (0.0f32, 0.0f32), None);
                 let (mut profiler, mut piechart_state, mut show_chunk_borders) = (crate::engine::Profiler::new(), crate::engine::ProfilerPieChartState::new(), false);
                 let (mut mining_state, mut last_loop, mut aspect) = (crate::engine::MiningState::new(), Instant::now(), 16.0 / 9.0);
@@ -49,7 +53,7 @@ impl LogicWorker {
                     profiler.push("commands");
                     while let Ok(cmd) = cmd_rx.try_recv() {
                         super::worker_commands::handle_worker_command(
-                            cmd, &mut world, &player, &mut camera, &mut inventory, &mut move_input,
+                            cmd, &mut world, &player, &mut camera, &mut inventory, &mut items, &mut move_input,
                             &mut jump_input, &mut sneak_input, &mut sprint_input, &mut aim_yaw, &mut mouse_ndc, &mut aspect,
                             &mut current_hovered_block, &mut mining_state, &mut tick_system,
                             &mut show_chunk_borders, &mut piechart_state, &profiler, &block_tx,
@@ -85,6 +89,8 @@ impl LogicWorker {
 
                     thread::sleep(Duration::from_millis(5));
                 }
+                autosaver.flush();
+                drop(autosaver);
                 crate::world::save_world_to_disk(&world);
             })
             .expect("Failed to spawn logic worker")

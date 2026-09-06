@@ -25,7 +25,7 @@ pub fn init_app(app: &mut App, event_loop: &ActiveEventLoop) {
     let (block_tx, block_rx) = mpsc::channel::<crate::network::Packet>();
     app.block_event_rx = Some(block_rx);
 
-    let handle = LogicWorker::spawn(app.latest_snapshot.clone(), cmd_rx, block_tx, app.running.clone());
+    let handle = LogicWorker::spawn(app.latest_snapshot.clone(), cmd_rx, block_tx, app.running.clone(), app.world_storage.clone());
     app.logic_thread = Some(handle);
     app.last_frame_time = Instant::now();
 }

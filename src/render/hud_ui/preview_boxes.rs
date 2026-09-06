@@ -1,4 +1,4 @@
-use glam::Vec3;
+use bevy::math::Vec3;
 use crate::engine::player_ctrl::steve_uv::*;
 
 pub struct PreviewBox {

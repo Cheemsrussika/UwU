@@ -1,3 +1,4 @@
+use bevy::math::Vec3;
 use winit::keyboard::KeyCode;
 use super::app_state::App;
 use crate::input::LogicCommand;
@@ -8,10 +9,10 @@ pub fn send_movement_inputs(app: &App) {
             let lock = app.latest_snapshot.lock().unwrap();
             lock.as_ref().map(|s| s.camera_rotation).unwrap_or(0.0)
         };
-        let forward = glam::Vec3::new(-cam_rot.sin(), 0.0, -cam_rot.cos()).normalize();
-        let right = glam::Vec3::new(-forward.z, 0.0, forward.x);
+        let forward = Vec3::new(-cam_rot.sin(), 0.0, -cam_rot.cos()).normalize();
+        let right = Vec3::new(-forward.z, 0.0, forward.x);
 
-        let mut world_move = glam::Vec3::ZERO;
+        let mut world_move = Vec3::ZERO;
         if *app.keys_pressed.get(&KeyCode::KeyW).unwrap_or(&false) { world_move += forward; }
         if *app.keys_pressed.get(&KeyCode::KeyS).unwrap_or(&false) { world_move -= forward; }
         if *app.keys_pressed.get(&KeyCode::KeyA).unwrap_or(&false) { world_move -= right; }

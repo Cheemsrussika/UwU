@@ -20,7 +20,7 @@ pub fn apply_menu_action(app: &mut App, action: MenuAction, event_loop: &ActiveE
         MenuAction::HostLan => {
             app.lan_detector = None;
             app.local_player_id = 1;
-            let srv = LanServer::bind("Steve's LAN World".into(), 25565).ok();
+            let srv = LanServer::bind("Steve's LAN World".into(), 25565, app.world_storage.clone()).ok();
             app.lan_server = srv;
             app.game_state = GameState::Playing;
         }

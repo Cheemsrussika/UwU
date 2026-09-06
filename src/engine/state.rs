@@ -1,10 +1,11 @@
-use glam::Vec3;
+use bevy::math::Vec3;
+use bevy::prelude::Resource;
 use crate::engine::items::{ItemEntityManager, ItemType};
 use crate::engine::{Camera, Inventory, Player};
 use crate::render::types::Vertex;
 use crate::world::VoxelWorld;
 
-#[derive(Clone)]
+#[derive(Resource, Clone)]
 pub struct RenderSnapshot {
     pub player_pos: Vec3,
     pub player_yaw: f32,

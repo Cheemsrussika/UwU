@@ -10,11 +10,14 @@ pub fn render_frame(app: &mut App, event_loop: &ActiveEventLoop, _dt: f32) {
         super::lan_sync::update_lan_network(app);
     }
 
+    let is_in_world = app.game_state == GameState::Playing || app.game_state == GameState::Paused;
     let maybe_snapshot = {
         let mut lock = app.latest_snapshot.lock().unwrap();
         if let Some(s) = lock.as_mut() {
             let snap = s.clone();
-            s.world_mesh = None;
+            if is_in_world {
+                s.world_mesh = None;
+            }
             Some(snap)
         } else {
             None

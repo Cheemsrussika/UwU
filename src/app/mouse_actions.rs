@@ -50,7 +50,6 @@ pub fn handle_mouse_action(
                                 x: place_p.0, y: place_p.1, z: place_p.2,
                                 block_type: crate::world::block_to_u8(&selected),
                             });
-                            crate::world::save_chunk_at(world, VoxelWorld::world_to_chunk(place_p.0, place_p.1, place_p.2).0);
                             if selected.is_fluid() {
                                 tick_system.schedule_tick(selected, place_p, FluidSimulator::WATER_TICK_DELAY, TickPriority::Normal);
                             }

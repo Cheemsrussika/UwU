@@ -13,6 +13,8 @@ pub struct Chunk {
     pub section: LevelChunkSection,
     pub status: ChunkStatus,
     pub is_dirty: bool,
+    /// Set when block data was modified in RAM but not yet flushed to disk.
+    pub disk_dirty: bool,
     pub mesh: (Vec<Vertex>, Vec<u32>),
 }
 
@@ -23,6 +25,7 @@ impl Chunk {
             section: LevelChunkSection::new(coords.1),
             status: ChunkStatus::Full,
             is_dirty: true,
+            disk_dirty: false,
             mesh: (Vec::new(), Vec::new()),
         }
     }
@@ -37,6 +40,7 @@ impl Chunk {
         let old = self.section.set_block_state(x, y, z, block);
         if old != block {
             self.is_dirty = true;
+            self.disk_dirty = true;
         }
     }
 }

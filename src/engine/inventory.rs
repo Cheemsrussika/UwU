@@ -1,6 +1,8 @@
+use bevy::prelude::Component;
 use crate::engine::items::{ItemStack, ItemType};
 use crate::world::block::BlockType;
 
+#[derive(Component, Clone, Debug)]
 pub struct Inventory {
     pub hotbar: [Option<ItemStack>; 9],
     pub storage: [Option<ItemStack>; 27],

@@ -1,4 +1,4 @@
-use glam::Vec3;
+use bevy::math::Vec3;
 use super::types::Vertex;
 
 pub fn build_hover_overlay_mesh(bx: i32, by: i32, bz: i32) -> (Vec<Vertex>, Vec<u32>) {

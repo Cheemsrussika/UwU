@@ -7,6 +7,7 @@ use super::lan_pinger::LanServerPinger;
 use super::packet_frame::write_packet_frame;
 use super::protocol::Packet;
 use super::server_client::handle_client;
+use crate::world::ConcurrentChunkStorage;
 
 pub struct LanServer {
     pub port: u16,
@@ -15,10 +16,15 @@ pub struct LanServer {
     incoming: Arc<Mutex<Vec<Packet>>>,
     clients: Arc<Mutex<Vec<TcpStream>>>,
     pub modified_blocks: Arc<Mutex<Vec<(i32, i32, i32, u8)>>>,
+    pub dropped_items: Arc<Mutex<Vec<(i32, bevy::math::Vec3, u8, u32)>>>,
 }
 
 impl LanServer {
-    pub fn bind(motd: String, port: u16) -> Result<Self, std::io::Error> {
+    pub fn bind(
+        motd: String,
+        port: u16,
+        storage: Arc<Mutex<Option<Arc<ConcurrentChunkStorage>>>>,
+    ) -> Result<Self, std::io::Error> {
         let listener = TcpListener::bind(("0.0.0.0", port))
             .or_else(|_| TcpListener::bind(("0.0.0.0", 0)))?;
         let _ = listener.set_nonblocking(true);
@@ -29,8 +35,10 @@ impl LanServer {
         let incoming = Arc::new(Mutex::new(Vec::new()));
         let clients = Arc::new(Mutex::new(Vec::<TcpStream>::new()));
         let modified_blocks = Arc::new(Mutex::new(Vec::new()));
+        let dropped_items = Arc::new(Mutex::new(Vec::new()));
 
-        let (r_c, in_c, cl_c, mb_c) = (running.clone(), incoming.clone(), clients.clone(), modified_blocks.clone());
+        let (r_c, in_c, cl_c, mb_c, di_c) = (running.clone(), incoming.clone(), clients.clone(), modified_blocks.clone(), dropped_items.clone());
+        let storage_c = storage.clone();
 
         thread::Builder::new().name("LanServerAcceptor".into()).spawn(move || {
             let mut next_id = 2;
@@ -42,14 +50,14 @@ impl LanServer {
                     if let Ok(writer_stream) = stream.try_clone() {
                         cl_c.lock().unwrap().push(writer_stream);
                     }
-                    handle_client(stream, next_id, r_c.clone(), in_c.clone(), mb_c.clone());
+                    handle_client(stream, next_id, r_c.clone(), in_c.clone(), mb_c.clone(), di_c.clone(), storage_c.clone());
                     next_id += 1;
                 }
                 thread::sleep(Duration::from_millis(10));
             }
         }).ok();
 
-        Ok(Self { port: actual_port, running, _pinger: pinger, incoming, clients, modified_blocks })
+        Ok(Self { port: actual_port, running, _pinger: pinger, incoming, clients, modified_blocks, dropped_items })
     }
 
     pub fn poll_packets(&self) -> Vec<Packet> {
@@ -64,6 +72,17 @@ impl LanServer {
         } else {
             list.push((x, y, z, bt));
         }
+    }
+
+    pub fn record_spawn_item(&self, id: i32, pos: bevy::math::Vec3, it: u8, count: u32) {
+        let mut list = self.dropped_items.lock().unwrap();
+        list.retain(|(eid, _, _, _)| *eid != id);
+        list.push((id, pos, it, count));
+    }
+
+    pub fn record_remove_entities(&self, ids: &[i32]) {
+        let mut list = self.dropped_items.lock().unwrap();
+        list.retain(|(eid, _, _, _)| !ids.contains(eid));
     }
 
     pub fn broadcast(&self, packet: &Packet) {

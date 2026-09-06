@@ -9,6 +9,7 @@ pub struct ProfilerNode {
     pub children: HashMap<String, ProfilerNode>,
 }
 
+#[derive(bevy::prelude::Resource)]
 pub struct Profiler {
     pub stack: Vec<(String, Instant)>,
     pub current_path: Vec<String>,

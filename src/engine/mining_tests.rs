@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use glam::Vec3;
+    use bevy::math::Vec3;
     use crate::engine::items::ItemType;
     use crate::engine::mining::MiningState;
     use crate::render::destroy_overlay::build_destroy_overlay_mesh;

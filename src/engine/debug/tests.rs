@@ -1,5 +1,5 @@
 use super::*;
-use glam::Vec3;
+use bevy::math::Vec3;
 
 #[test]
 fn test_result_field_color() {

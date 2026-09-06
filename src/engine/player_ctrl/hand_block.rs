@@ -1,4 +1,4 @@
-use glam::{Mat4, Vec3};
+use bevy::math::{Mat4, Vec3};
 use crate::render::types::Vertex;
 use crate::world::block::BlockType;
 

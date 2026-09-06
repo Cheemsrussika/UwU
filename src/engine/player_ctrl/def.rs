@@ -1,7 +1,9 @@
-use glam::Vec3;
+use bevy::math::Vec3;
+use bevy::prelude::Component;
 use crate::render::types::Vertex;
 use crate::world::VoxelWorld;
 
+#[derive(Component, Clone, Debug)]
 pub struct Player {
     pub position: Vec3,
     pub velocity: Vec3,

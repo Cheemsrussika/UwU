@@ -1,9 +1,10 @@
-use glam::Vec3;
+use bevy::math::Vec3;
 use super::item_stack::ItemStack;
 use crate::world::VoxelWorld;
 
 #[derive(Clone, Debug)]
 pub struct DroppedItem {
+    pub id: i32,
     pub position: Vec3,
     pub velocity: Vec3,
     pub item: ItemStack,
@@ -15,8 +16,13 @@ pub struct DroppedItem {
 
 impl DroppedItem {
     pub fn new(position: Vec3, velocity: Vec3, item: ItemStack) -> Self {
+        Self::new_with_id(0, position, velocity, item)
+    }
+
+    pub fn new_with_id(id: i32, position: Vec3, velocity: Vec3, item: ItemStack) -> Self {
         let bob_offset = (position.x * 13.0 + position.z * 17.0).sin().abs() * 6.28;
         Self {
+            id,
             position,
             velocity,
             item,

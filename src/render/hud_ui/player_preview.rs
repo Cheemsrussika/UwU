@@ -1,4 +1,4 @@
-use glam::Vec3;
+use bevy::math::Vec3;
 use super::preview_boxes::get_steve_preview_boxes;
 use super::renderer::HudVertex;
 

@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod tests {
+    use bevy::math::Vec3;
     use crate::engine::inventory::Inventory;
     use crate::engine::items::{ItemStack, ItemType};
     use crate::render::hud_ui::preview_boxes::get_steve_preview_boxes;
@@ -45,9 +46,9 @@ mod tests {
     fn test_steve_preview_boxes_geometry() {
         let boxes = get_steve_preview_boxes();
         assert_eq!(boxes.len(), 6);
-        assert_eq!(boxes[5].size, glam::Vec3::new(8.0, 8.0, 8.0));
-        assert_eq!(boxes[5].origin, glam::Vec3::new(0.0, 28.0, 0.0));
-        assert_eq!(boxes[2].size, glam::Vec3::new(8.0, 12.0, 4.0));
+        assert_eq!(boxes[5].size, Vec3::new(8.0, 8.0, 8.0));
+        assert_eq!(boxes[5].origin, Vec3::new(0.0, 28.0, 0.0));
+        assert_eq!(boxes[2].size, Vec3::new(8.0, 12.0, 4.0));
     }
 
     #[test]

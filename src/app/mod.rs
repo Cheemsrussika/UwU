@@ -1,4 +1,5 @@
 pub mod app_events;
+pub mod bevy_app;
 pub mod app_init;
 pub mod app_state;
 pub mod game_state;
@@ -13,9 +14,11 @@ pub mod mouse_input_handler;
 pub mod render_loop;
 pub mod render_movement;
 pub mod text_input;
+pub mod plugins;
 pub mod worker_commands;
 pub mod worker_snapshot;
 pub mod worker_tick;
 
 pub use app_state::App;
+pub use bevy_app::run_bevy_engine;
 pub use game_state::GameState;

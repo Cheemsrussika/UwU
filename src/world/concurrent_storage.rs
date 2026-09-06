@@ -63,4 +63,32 @@ impl ConcurrentChunkStorage {
             }
         }
     }
+
+    /// Clones every chunk flagged as needing a disk flush and clears the flag.
+    /// The clone is taken so the caller can write to disk without holding a lock;
+    /// the original chunk stays in RAM with the flag cleared so later edits
+    /// re-mark it for the next flush.
+    pub fn drain_disk_dirty(&self) -> Vec<((i32, i32, i32), Chunk)> {
+        let mut out = Vec::new();
+        for shard in &self.shards {
+            let mut s = shard.write().unwrap();
+            for (k, chunk) in s.iter_mut() {
+                if chunk.disk_dirty {
+                    out.push((*k, chunk.clone()));
+                    chunk.disk_dirty = false;
+                }
+            }
+        }
+        out
+    }
+
+    /// Clears the disk-dirty flag on every chunk (used after a full world load).
+    pub fn clear_disk_dirty_all(&self) {
+        for shard in &self.shards {
+            let mut s = shard.write().unwrap();
+            for v in s.values_mut() {
+                v.disk_dirty = false;
+            }
+        }
+    }
 }

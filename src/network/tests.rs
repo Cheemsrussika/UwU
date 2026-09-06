@@ -4,7 +4,7 @@ mod tests {
     use crate::network::lan_discovery::*;
     use crate::network::protocol::Packet;
     use crate::network::varint::{read_varint, write_varint};
-    use glam::Vec3;
+    use bevy::math::Vec3;
 
     #[test]
     fn test_lan_discovery_java_parity() {
@@ -40,16 +40,23 @@ mod tests {
         let p_block = Packet::ClientboundBlockUpdate { x: 5, y: 12, z: -8, block_type: 2 };
         let (b_pid, b_payload) = p_block.encode();
         assert_eq!(Packet::decode(b_pid, &b_payload), Some(p_block));
+
+        let p_item = Packet::ClientboundSpawnItem { entity_id: 101, pos: Vec3::new(1.0, 2.0, 3.0), item_type: 2, count: 5 };
+        let (i_pid, i_payload) = p_item.encode();
+        assert_eq!(Packet::decode(i_pid, &i_payload), Some(p_item));
     }
 
     #[test]
     fn test_server_client_java_handshake_and_world_sync() {
         use crate::network::{LanServer, LanClient};
+        use std::sync::{Arc, Mutex};
         use std::thread;
         use std::time::Duration;
 
-        let server = LanServer::bind("SyncTestWorld".into(), 0).expect("bind free port");
+        let storage: Arc<Mutex<Option<Arc<crate::world::ConcurrentChunkStorage>>>> = Arc::new(Mutex::new(None));
+        let server = LanServer::bind("SyncTestWorld".into(), 0, storage).expect("bind free port");
         server.record_block_change(10, 20, 30, 4);
+        server.record_spawn_item(1001, Vec3::new(5.0, 6.0, 7.0), 3, 2);
         let port = server.port;
 
         let client = LanClient::connect(&format!("127.0.0.1:{}", port), "TestPlayer").expect("connect");
@@ -58,5 +65,6 @@ mod tests {
         let c_pkts = client.poll_packets();
         assert!(c_pkts.iter().any(|p| matches!(p, Packet::ClientboundLogin { entity_id: 2 })));
         assert!(c_pkts.iter().any(|p| matches!(p, Packet::ClientboundBlockUpdate { x: 10, y: 20, z: 30, block_type: 4 })));
+        assert!(c_pkts.iter().any(|p| matches!(p, Packet::ClientboundSpawnItem { entity_id: 1001, item_type: 3, count: 2, .. })));
     }
 }

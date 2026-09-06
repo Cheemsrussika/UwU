@@ -9,6 +9,7 @@ use winit::window::Window;
 use crate::engine::RenderSnapshot;
 use crate::input::LogicCommand;
 use crate::render::Renderer;
+use crate::world::ConcurrentChunkStorage;
 
 pub struct App {
     pub window: Option<Arc<Window>>,
@@ -30,6 +31,7 @@ pub struct App {
     pub direct_ip_input: String,
     pub local_player_id: u64,
     pub block_event_rx: Option<mpsc::Receiver<crate::network::Packet>>,
+    pub world_storage: Arc<Mutex<Option<Arc<ConcurrentChunkStorage>>>>,
 }
 
 impl App {
@@ -54,6 +56,7 @@ impl App {
             direct_ip_input: "127.0.0.1:25565".to_string(),
             local_player_id: 1,
             block_event_rx: None,
+            world_storage: Arc::new(Mutex::new(None)),
         }
     }
 }

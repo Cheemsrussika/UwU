@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use glam::Vec3;
+    use bevy::math::Vec3;
     use crate::engine::{Inventory, ItemStack, ItemType, MiningState, Player};
     use crate::world::block::BlockType;
     use crate::world::VoxelWorld;

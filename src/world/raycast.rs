@@ -1,4 +1,4 @@
-use glam::Vec3;
+use bevy::math::Vec3;
 use super::voxel::VoxelWorld;
 
 pub fn raycast_world_precise(

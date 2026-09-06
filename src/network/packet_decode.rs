@@ -1,7 +1,7 @@
 use super::byte_buf::FriendlyByteBufReader;
 use super::packet_types::*;
 use super::protocol::Packet;
-use glam::Vec3;
+use bevy::math::Vec3;
 
 pub fn decode_packet(packet_id: i32, payload: &[u8]) -> Option<Packet> {
     let mut r = FriendlyByteBufReader::new(payload);
@@ -30,11 +30,33 @@ pub fn decode_packet(packet_id: i32, payload: &[u8]) -> Option<Packet> {
             let block_type = r.read_varint().ok()? as u8;
             Some(Packet::ClientboundBlockUpdate { x, y, z, block_type })
         }
+        CB_CHUNK_DATA => {
+            let x = r.read_varint().ok()?;
+            let y = r.read_varint().ok()?;
+            let z = r.read_varint().ok()?;
+            let run_count = r.read_varint().ok()? as usize;
+            let mut runs = Vec::with_capacity(run_count);
+            for _ in 0..run_count {
+                let count = r.read_varint().ok()? as u16;
+                let bt = r.read_byte().ok()?;
+                runs.push((count, bt));
+            }
+            Some(Packet::ClientboundChunkData { x, y, z, runs })
+        }
         CB_REMOVE_ENTITIES => {
             let count = r.read_varint().ok()? as usize;
             let mut entity_ids = Vec::with_capacity(count);
             for _ in 0..count { entity_ids.push(r.read_varint().ok()?); }
             Some(Packet::ClientboundRemoveEntities { entity_ids })
+        }
+        CB_SPAWN_ITEM => {
+            let entity_id = r.read_varint().ok()?;
+            let x = r.read_double().ok()? as f32;
+            let y = r.read_double().ok()? as f32;
+            let z = r.read_double().ok()? as f32;
+            let item_type = r.read_byte().ok()?;
+            let count = r.read_varint().ok()? as u32;
+            Some(Packet::ClientboundSpawnItem { entity_id, pos: Vec3::new(x, y, z), item_type, count })
         }
         SB_HELLO => Some(Packet::ServerboundHello { name: r.read_utf().ok()? }),
         SB_MOVE_PLAYER_POS_ROT => {

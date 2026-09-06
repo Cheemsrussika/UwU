@@ -1,5 +1,7 @@
-use glam::{Mat4, Vec3};
+use bevy::math::{Mat4, Vec3};
+use bevy::prelude::Component;
 
+#[derive(Component, Clone, Debug)]
 pub struct Camera {
     pub rotation_angle: f32,
     pub pitch_angle: f32,

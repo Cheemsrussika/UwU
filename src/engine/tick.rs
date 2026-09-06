@@ -1,7 +1,9 @@
 use std::collections::{BinaryHeap, HashSet};
+use bevy::prelude::Resource;
 use super::scheduled_tick::{ScheduledTick, TickPriority};
 
-pub struct TickSystem<T: Copy + Eq + std::hash::Hash> {
+#[derive(Resource)]
+pub struct TickSystem<T: Copy + Eq + std::hash::Hash + Send + Sync + 'static> {
     pub tick_rate: f32,
     accumulator: f32,
     pub tick_count: u64,
@@ -10,7 +12,7 @@ pub struct TickSystem<T: Copy + Eq + std::hash::Hash> {
     scheduled_set: HashSet<(T, (i32, i32, i32))>,
 }
 
-impl<T: Copy + Eq + std::hash::Hash> TickSystem<T> {
+impl<T: Copy + Eq + std::hash::Hash + Send + Sync + 'static> TickSystem<T> {
     pub fn new(tick_rate: f32) -> Self {
         Self {
             tick_rate, accumulator: 0.0, tick_count: 0, sub_tick_counter: 0,

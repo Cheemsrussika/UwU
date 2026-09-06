@@ -1,5 +1,6 @@
 pub mod camera;
 pub mod debug;
+pub mod ecs;
 #[cfg(test)]
 pub mod gameplay_tests;
 #[cfg(test)]

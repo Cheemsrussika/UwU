@@ -20,7 +20,6 @@ pub fn tick_world_and_player(
         let _ = block_tx.send(Packet::ClientboundBlockUpdate {
             x, y, z, block_type: block_to_u8(&bt),
         });
-        crate::world::save_chunk_at(world, VoxelWorld::world_to_chunk(x, y, z).0);
     }
 
     if player.stamina < 100.0 {

@@ -1,4 +1,4 @@
-use glam::Vec3;
+use bevy::math::Vec3;
 use crate::engine::items::ItemType;
 use crate::render::types::Vertex;
 

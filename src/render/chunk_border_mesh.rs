@@ -1,4 +1,4 @@
-use glam::Vec3;
+use bevy::math::Vec3;
 use super::types::Vertex;
 
 fn add_box_line(v: &mut Vec<Vertex>, i: &mut Vec<u32>, p0: Vec3, p1: Vec3, r: f32, layer: f32) {

@@ -29,10 +29,26 @@ pub fn encode_packet(packet: &Packet) -> (i32, Vec<u8>) {
             buf.write_varint(*block_type as i32);
             (CB_BLOCK_UPDATE, buf.data)
         }
+        Packet::ClientboundChunkData { x, y, z, runs } => {
+            buf.write_varint(*x); buf.write_varint(*y); buf.write_varint(*z);
+            buf.write_varint(runs.len() as i32);
+            for &(count, bt) in runs {
+                buf.write_varint(count as i32);
+                buf.write_byte(bt);
+            }
+            (CB_CHUNK_DATA, buf.data)
+        }
         Packet::ClientboundRemoveEntities { entity_ids } => {
             buf.write_varint(entity_ids.len() as i32);
             for &id in entity_ids { buf.write_varint(id); }
             (CB_REMOVE_ENTITIES, buf.data)
+        }
+        Packet::ClientboundSpawnItem { entity_id, pos, item_type, count } => {
+            buf.write_varint(*entity_id);
+            buf.write_double(pos.x as f64); buf.write_double(pos.y as f64); buf.write_double(pos.z as f64);
+            buf.write_byte(*item_type);
+            buf.write_varint(*count as i32);
+            (CB_SPAWN_ITEM, buf.data)
         }
         Packet::ServerboundHello { name } => {
             buf.write_utf(name);

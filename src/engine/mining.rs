@@ -1,7 +1,9 @@
 use crate::engine::items::ItemType;
 use crate::world::block::BlockType;
 
-#[derive(Default, Clone, Debug)]
+use bevy::prelude::Component;
+
+#[derive(Component, Default, Clone, Debug)]
 pub struct MiningState {
     pub target: Option<(i32, i32, i32)>,
     pub progress: f32,

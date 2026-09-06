@@ -2,7 +2,7 @@
 mod tests {
     use crate::engine::player_ctrl::def::Player;
     use crate::world::VoxelWorld;
-    use glam::Vec3;
+    use bevy::math::Vec3;
 
     #[test]
     fn test_sprinting_speed_boost_and_stamina() {

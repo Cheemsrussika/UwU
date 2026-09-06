@@ -1,4 +1,4 @@
-use glam::Vec3;
+use bevy::math::Vec3;
 use super::dropped_item::DroppedItem;
 use super::item_type::ItemType;
 use crate::render::types::Vertex;

@@ -1,9 +1,10 @@
-use glam::Vec3;
+use bevy::math::Vec3;
+use bevy::prelude::Component;
 use std::time::Instant;
 use crate::engine::player_ctrl::def::Player;
 use crate::engine::items::ItemType;
 
-#[derive(Clone, Debug)]
+#[derive(Component, Clone, Debug)]
 pub struct RemotePlayer {
     pub id: u64,
     pub name: String,

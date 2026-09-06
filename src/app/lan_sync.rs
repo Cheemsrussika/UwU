@@ -24,15 +24,11 @@ pub fn update_lan_network(app: &mut App) {
         if let Some(ref pkt) = local_sync { srv.broadcast(pkt); }
         for bpkt in &local_blocks {
             srv.broadcast(bpkt);
-            if let Packet::ClientboundBlockUpdate { x, y, z, block_type } = bpkt {
-                srv.record_block_change(*x, *y, *z, *block_type);
-            }
+            record_server_event(srv, bpkt);
         }
         for pkt in srv.poll_packets() {
             srv.broadcast(&pkt);
-            if let Packet::ClientboundBlockUpdate { x, y, z, block_type } = &pkt {
-                srv.record_block_change(*x, *y, *z, *block_type);
-            }
+            record_server_event(srv, &pkt);
             server_in.push(pkt);
         }
     }
@@ -48,6 +44,15 @@ pub fn update_lan_network(app: &mut App) {
 
     let now = Instant::now();
     app.remote_players.retain(|p| now.duration_since(p.last_seen).as_secs() < 3);
+}
+
+fn record_server_event(srv: &crate::network::LanServer, pkt: &Packet) {
+    match pkt {
+        Packet::ClientboundBlockUpdate { x, y, z, block_type } => srv.record_block_change(*x, *y, *z, *block_type),
+        Packet::ClientboundSpawnItem { entity_id, pos, item_type, count } => srv.record_spawn_item(*entity_id, *pos, *item_type, *count),
+        Packet::ClientboundRemoveEntities { entity_ids } => srv.record_remove_entities(entity_ids),
+        _ => {}
+    }
 }
 
 fn handle_network_packet(app: &mut App, pkt: Packet) {
@@ -71,12 +76,17 @@ fn handle_network_packet(app: &mut App, pkt: Packet) {
             }
         }
         Packet::ClientboundBlockUpdate { x, y, z, block_type } => {
-            if let Some(ref tx) = app.command_tx {
-                let _ = tx.send(crate::input::LogicCommand::RemoteBlockChange { x, y, z, block_type });
-            }
+            if let Some(ref tx) = app.command_tx { let _ = tx.send(crate::input::LogicCommand::RemoteBlockChange { x, y, z, block_type }); }
+        }
+        Packet::ClientboundChunkData { x, y, z, runs } => {
+            if let Some(ref tx) = app.command_tx { let _ = tx.send(crate::input::LogicCommand::RemoteChunkData { x, y, z, runs }); }
+        }
+        Packet::ClientboundSpawnItem { entity_id, pos, item_type, count } => {
+            if let Some(ref tx) = app.command_tx { let _ = tx.send(crate::input::LogicCommand::RemoteSpawnItem { entity_id, pos, item_type, count }); }
         }
         Packet::ClientboundRemoveEntities { entity_ids } => {
             app.remote_players.retain(|p| !entity_ids.contains(&(p.id as i32)));
+            if let Some(ref tx) = app.command_tx { let _ = tx.send(crate::input::LogicCommand::RemoteRemoveEntities { entity_ids }); }
         }
         _ => {}
     }

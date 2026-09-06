@@ -1,6 +1,6 @@
 use super::result_field::ResultField;
 
-#[derive(Clone, Debug)]
+#[derive(bevy::prelude::Resource, Clone, Debug)]
 pub struct ProfilerPieChartState {
     pub is_open: bool,
     pub current_path: String,

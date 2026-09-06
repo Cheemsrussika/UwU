@@ -6,6 +6,7 @@ use super::concurrent_storage::ConcurrentChunkStorage;
 use super::flat_gen::generate_flat_chunk_data;
 use crate::render::types::Vertex;
 
+#[derive(bevy::prelude::Resource)]
 pub struct VoxelWorld {
     pub storage: Arc<ConcurrentChunkStorage>,
     pub cached_world_mesh: (Vec<Vertex>, Vec<u32>),
