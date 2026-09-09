@@ -25,6 +25,7 @@ impl HudAtlas {
     pub const XP_BG: SpriteRect = Self::rect(0, 50, 182, 5);
     pub const XP_FG: SpriteRect = Self::rect(0, 56, 182, 5);
     pub const INVENTORY_BG: SpriteRect = Self::rect(0, 512, 352, 332);
+    pub const SLOT: SpriteRect = Self::rect(16, 680, 36, 36); // storage row0 col0 slot from INVENTORY_BG
     pub const CREATIVE_INVENTORY_BG: SpriteRect = Self::rect(360, 512, 390, 272);
     pub const STEVE_SKIN: SpriteRect = Self::rect(512, 0, 64, 64);
     pub const BUTTON: SpriteRect = Self::rect(0, 200, 200, 20);

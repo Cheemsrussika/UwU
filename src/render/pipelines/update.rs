@@ -88,5 +88,6 @@ pub fn update_renderer_snapshot(
         &snapshot.hotbar_items, &snapshot.all_slots, snapshot.inventory_open, snapshot.selected_slot,
         snapshot.carried_item, snapshot.mouse_ndc, profiler_param, aspect,
         snapshot.game_mode.is_creative(),
+        snapshot.container.as_ref(),
     );
 }

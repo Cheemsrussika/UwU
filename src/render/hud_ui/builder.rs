@@ -21,6 +21,7 @@ pub fn update_hud_mesh(
     profiler_data: Option<(&[ResultField], &str)>,
     aspect: f32,
     is_creative: bool,
+    container: Option<&crate::engine::ContainerSnapshot>,
 ) {
     let mut v = Vec::new();
     let mut i = Vec::new();
@@ -28,7 +29,9 @@ pub fn update_hud_mesh(
     draw_bars_and_crosshair(&mut v, &mut i, health, stamina, hunger, aspect);
     draw_hotbar_slots(&mut v, &mut i, hotbar, selected_slot, aspect);
     if inventory_open {
-        if is_creative {
+        if let Some(cs) = container {
+            super::container_window::draw_container_window(&mut v, &mut i, cs, all_slots, carried_item, mouse_ndc, aspect);
+        } else if is_creative {
             super::creative_inventory::draw_creative_inventory_window(&mut v, &mut i, hotbar, carried_item, mouse_ndc, aspect);
         } else {
             draw_inventory_window(&mut v, &mut i, all_slots, carried_item, mouse_ndc, aspect);

@@ -19,8 +19,7 @@ pub fn step_physics_and_mining(
 ) {
     let is_mining = mining_state.is_active;
     player.update_physics(move_input, jump_input, sneak_input, sprint_input, is_mining, aim_yaw, dt, world);
-    items.update(dt, world, player.position);
-    crate::engine::mobs::resolve_player_animals_collision(player, &mut items.animals);
+    items.update_with_held(dt, world, player.position, player.held_item);
     let picked = items.try_pickup(player.position, inventory);
     if !picked.is_empty() {
         let _ = block_tx.send(crate::network::Packet::ClientboundRemoveEntities { entity_ids: picked });

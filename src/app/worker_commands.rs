@@ -1,6 +1,6 @@
 use bevy::math::Vec3;
-use crate::engine::{Camera, Inventory, Player, TickSystem};
-use crate::input::{HudZone, LogicCommand};
+use crate::engine::{Camera, ContainerRef, Inventory, Player, TickSystem};
+use crate::input::LogicCommand;
 use crate::world::{BlockType, VoxelWorld};
 
 pub fn handle_worker_command(
@@ -10,6 +10,8 @@ pub fn handle_worker_command(
     camera: &mut Camera,
     inventory: &mut Inventory,
     items: &mut crate::engine::ItemEntityManager,
+    block_entities: &mut crate::engine::BlockEntityManager,
+    open_container: &mut Option<ContainerRef>,
     move_input: &mut Vec3,
     jump_input: &mut bool,
     sneak_input: &mut bool,
@@ -38,30 +40,36 @@ pub fn handle_worker_command(
         LogicCommand::Sprint(s) => *sprint_input = s,
         LogicCommand::RotateCamera(amt) => camera.rotation_angle += amt,
         LogicCommand::ZoomCamera(amt) => camera.distance = (camera.distance + amt).clamp(6.0, 80.0),
-        LogicCommand::ToggleInventory => inventory.toggle_open(),
+        LogicCommand::ToggleInventory => {
+            if open_container.is_some() {
+                *open_container = None;
+                inventory.is_open = false;
+                inventory.carried_item = None;
+            } else {
+                inventory.toggle_open();
+            }
+        }
+        LogicCommand::CloseInventory => {
+            if open_container.is_some() {
+                *open_container = None;
+                inventory.carried_item = None;
+            }
+            inventory.is_open = false;
+        }
         LogicCommand::SelectSlot(slot) => inventory.select_slot(slot),
         LogicCommand::NextSlot => inventory.next_slot(),
         LogicCommand::PrevSlot => inventory.prev_slot(),
         LogicCommand::UpdateCursor { aspect, mouse_pos, screen_size } => {
-            *aspect_out = aspect;
-            *mouse_ndc = ((mouse_pos.0 / screen_size.0) * 2.0 - 1.0, 1.0 - (mouse_pos.1 / screen_size.1) * 2.0);
-            if HudZone::is_point_in_hud(mouse_pos.0, mouse_pos.1, screen_size.0, screen_size.1, inventory.is_open) {
-                *current_hovered = None;
-                if mining_state.is_holding_left { mining_state.set_mining(None, false); }
-            } else {
-                let (ro, rd) = camera.screen_to_ray(player.position, aspect, mouse_pos.0, mouse_pos.1, screen_size.0, screen_size.1);
-                let hit = crate::world::raycast_world_precise(world, ro, rd, 150.0);
-                *current_hovered = hit.map(|(b, _, _)| b);
-                *aim_yaw = Some(hit.map(|(b, _, _)| (b.0 as f32 + 0.5 - player.position.x).atan2(b.2 as f32 + 0.5 - player.position.z)).unwrap_or_else(|| rd.x.atan2(rd.z)));
-                if mining_state.is_holding_left && mining_state.target != *current_hovered {
-                    mining_state.set_mining(*current_hovered, current_hovered.is_some());
-                }
-            }
+            super::worker_cmd_cursor::handle_update_cursor(
+                aspect, mouse_pos, screen_size, aspect_out, mouse_ndc,
+                inventory.is_open, current_hovered, mining_state, camera, player, world, aim_yaw,
+            );
         }
         LogicCommand::MouseAction { button, is_pressed, aspect, mouse_pos, screen_size, is_shift } => {
             super::mouse_actions::handle_mouse_action(
                 button, is_pressed, aspect, mouse_pos, screen_size, is_shift,
                 inventory, mining_state, world, camera, player, tick_system, block_tx,
+                block_entities, open_container,
             );
         }
         LogicCommand::ToggleGameMode => {

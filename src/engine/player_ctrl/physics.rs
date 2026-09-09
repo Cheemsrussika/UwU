@@ -93,5 +93,5 @@ pub fn update_player_movement(p: &mut Player, move_input: Vec3, jump: bool, spri
         p.velocity.y = 0.0;
     }
 
-    if p.position.y < -30.0 { p.position = Vec3::new(0.0, 7.0, 0.0); p.velocity = Vec3::ZERO; }
+    if p.position.y < -30.0 { p.position = Vec3::new(7.0, 7.0, 7.0); p.velocity = Vec3::ZERO; }
 }

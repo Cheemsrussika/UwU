@@ -4,6 +4,7 @@ use super::chunk::Chunk;
 use super::chunk_mesh_par::{collect_world_mesh, rebuild_dirty_chunks_multithreaded};
 use super::concurrent_storage::ConcurrentChunkStorage;
 use super::flat_gen::generate_flat_chunk_data;
+use super::island_gen::generate_island_chunk;
 use crate::render::types::Vertex;
 
 #[derive(bevy::prelude::Resource)]
@@ -30,6 +31,13 @@ impl VoxelWorld {
                 w.storage.insert((cx, 0, cz), chunk);
             }
         }
+        w.rebuild_all_dirty_chunks();
+        w
+    }
+
+    pub fn new_island() -> Self {
+        let mut w = Self::new();
+        w.storage.insert((0, 0, 0), generate_island_chunk());
         w.rebuild_all_dirty_chunks();
         w
     }

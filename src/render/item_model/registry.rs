@@ -18,6 +18,7 @@ pub fn get_item_texture_bytes(item: ItemType) -> Option<&'static [u8]> {
         ItemType::Mutton => Some(include_bytes!("../../../assets/textures/item/mutton.png")),
         ItemType::CookedMutton => Some(include_bytes!("../../../assets/textures/item/cooked_mutton.png")),
         ItemType::Leather => Some(include_bytes!("../../../assets/textures/item/leather.png")),
+        ItemType::WhiteWool => Some(include_bytes!("../../../assets/textures/block/white_wool.png")),
         ItemType::WoodenPickaxe => Some(include_bytes!("../../../assets/textures/item/wooden_pickaxe.png")),
         ItemType::StonePickaxe => Some(include_bytes!("../../../assets/textures/item/stone_pickaxe.png")),
         ItemType::IronPickaxe => Some(include_bytes!("../../../assets/textures/item/iron_pickaxe.png")),

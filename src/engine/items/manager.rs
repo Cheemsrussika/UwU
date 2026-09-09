@@ -4,7 +4,6 @@ use super::dropped_item::DroppedItem;
 use super::item_mesh::build_dropped_item_mesh;
 use super::item_stack::ItemStack;
 use crate::engine::ecs::*;
-use crate::engine::mobs::{build_animal_mesh, maybe_spawn_animals, tick_animals, Animal};
 use crate::engine::Inventory;
 use crate::render::types::Vertex;
 use crate::world::VoxelWorld;
@@ -14,8 +13,6 @@ pub struct ItemEntityManager {
     pub ecs_world: World,
     pub next_id: i32,
     pub items: Vec<DroppedItem>,
-    pub animals: Vec<(Animal, Vec3)>,
-    pub spawn_timer: f32,
 }
 
 impl Default for ItemEntityManager {
@@ -27,7 +24,7 @@ impl ItemEntityManager {
         let base = (std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_millis()).unwrap_or(1000) as i32 & 0x3FFFFFFF).max(1000);
-        Self { ecs_world: World::new(), next_id: base, items: Vec::new(), animals: Vec::new(), spawn_timer: 0.0 }
+        Self { ecs_world: World::new(), next_id: base, items: Vec::new() }
     }
 
     pub fn spawn(&mut self, pos: Vec3, vel: Vec3, item: ItemStack) -> i32 {
@@ -48,9 +45,11 @@ impl ItemEntityManager {
     }
 
     pub fn update(&mut self, dt: f32, world: &VoxelWorld, player_pos: Vec3) {
+        self.update_with_held(dt, world, player_pos, None);
+    }
+
+    pub fn update_with_held(&mut self, dt: f32, world: &VoxelWorld, _player_pos: Vec3, _held: Option<super::item_type::ItemType>) {
         update_item_physics_and_lifetime(&mut self.ecs_world, world, dt);
-        tick_animals(&mut self.ecs_world, world, player_pos, dt);
-        maybe_spawn_animals(&mut self.ecs_world, world, player_pos, &mut self.spawn_timer, dt);
         self.sync_items();
     }
 
@@ -72,15 +71,9 @@ impl ItemEntityManager {
                 age: age.0, bob_offset: bob.0, pickup_delay: delay.0, on_ground: grounded.0,
             });
         }
-        self.animals.clear();
-        let mut anim_query = self.ecs_world.query::<(&Animal, &Position)>();
-        for (animal, pos) in anim_query.iter(&self.ecs_world) {
-            self.animals.push((animal.clone(), pos.0));
-        }
     }
 
     pub fn build_mesh(&self, v: &mut Vec<Vertex>, idx: &mut Vec<u32>) {
         for item in &self.items { build_dropped_item_mesh(item, v, idx); }
-        for (animal, pos) in &self.animals { build_animal_mesh(animal, *pos, v, idx); }
     }
 }

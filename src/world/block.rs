@@ -47,10 +47,10 @@ impl BlockType {
             BlockType::CraftingTable => 29.0,
             BlockType::Furnace => 31.0,
             BlockType::Chest => 35.0,
-            BlockType::Torch => 68.0,
-            BlockType::IronBlock => 69.0,
-            BlockType::CoalBlock => 70.0,
-            BlockType::DiamondBlock => 71.0,
+            BlockType::Torch => 65.0,
+            BlockType::IronBlock => 66.0,
+            BlockType::CoalBlock => 67.0,
+            BlockType::DiamondBlock => 68.0,
             BlockType::Air => -1.0,
         }
     }

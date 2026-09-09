@@ -2,7 +2,7 @@ pub struct TextureAtlas;
 
 impl TextureAtlas {
     pub const RESOLUTION: u32 = super::texture_loader::RESOLUTION;
-    pub const LAYER_COUNT: u32 = 72;
+    pub const LAYER_COUNT: u32 = 69;
 
     pub fn generate_pixel_atlas() -> Vec<u8> {
         let mut pixels = Vec::with_capacity((64 * 64 * 4 * Self::LAYER_COUNT) as usize);
@@ -18,11 +18,11 @@ impl TextureAtlas {
         super::atlas_layers_blocks::append_wood_leaves_and_functional_blocks(&mut pixels, foliage_tint);
         // 18..=27: Destroy stages
         super::atlas_destroy::append_destroy_stages(&mut pixels);
-        // 28..=38: Survival blocks and animal entities
+        // 28..=35: Survival blocks and entities
         super::atlas_layers_blocks::append_survival_blocks_and_entities(&mut pixels);
-        // 39..=54: Survival items
+        // 36..=51: Survival items
         super::atlas_layers_items::append_survival_items(&mut pixels);
-        // 55..=71: Tools and storage blocks
+        // 52..=68: Tools and storage blocks
         super::atlas_layers_tools_blocks::append_tools_and_blocks(&mut pixels);
 
         pixels

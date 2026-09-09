@@ -16,6 +16,7 @@ pub mod render_loop;
 pub mod render_movement;
 pub mod text_input;
 pub mod plugins;
+pub mod worker_cmd_cursor;
 pub mod worker_commands;
 pub mod worker_init;
 pub mod worker_remote_cmds;

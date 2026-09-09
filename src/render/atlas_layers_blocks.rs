@@ -30,8 +30,4 @@ pub fn append_survival_blocks_and_entities(pixels: &mut Vec<u8>) {
     pixels.extend(load_atlas_layer(include_bytes!("../../assets/textures/block/furnace_top.png"), None, [120, 120, 120, 255]));
     pixels.extend(load_atlas_layer(include_bytes!("../../assets/textures/block/white_wool.png"), None, [230, 230, 230, 255]));
     pixels.extend(load_atlas_layer(include_bytes!("../../assets/textures/entity/chest.png"), None, [160, 115, 65, 255]));
-    // 36..=38: Pig, Cow, Sheep
-    pixels.extend(load_atlas_layer(include_bytes!("../../assets/textures/entity/pig.png"), None, [240, 160, 160, 255]));
-    pixels.extend(load_atlas_layer(include_bytes!("../../assets/textures/entity/cow.png"), None, [90, 65, 40, 255]));
-    pixels.extend(load_atlas_layer(include_bytes!("../../assets/textures/entity/sheep.png"), None, [230, 230, 230, 255]));
 }

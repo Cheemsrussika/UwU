@@ -1,5 +1,5 @@
 use std::sync::{Arc, Mutex};
-use crate::engine::{Camera, Inventory, ItemEntityManager, MiningState, Player, Profiler, ProfilerPieChartState, RenderSnapshot};
+use crate::engine::{BlockEntityManager, Camera, ContainerRef, Inventory, ItemEntityManager, MiningState, Player, Profiler, ProfilerPieChartState, RenderSnapshot};
 use crate::world::VoxelWorld;
 
 pub fn update_snapshot(
@@ -9,6 +9,8 @@ pub fn update_snapshot(
     camera: &Camera,
     inventory: &Inventory,
     items: &ItemEntityManager,
+    block_entities: &BlockEntityManager,
+    open_container: Option<ContainerRef>,
     hovered: Option<(i32, i32, i32)>,
     mouse_ndc: (f32, f32),
     show_chunk_borders: bool,
@@ -17,7 +19,7 @@ pub fn update_snapshot(
     pie: &ProfilerPieChartState,
 ) {
     player.held_item = inventory.hotbar[inventory.selected_slot].as_ref().map(|s| s.item);
-    let mut snap = RenderSnapshot::capture(world, player, camera, inventory, items, false);
+    let mut snap = RenderSnapshot::capture(world, player, camera, inventory, items, block_entities, open_container, false);
     snap.hovered_block = hovered;
     snap.mouse_ndc = mouse_ndc;
     snap.show_chunk_borders = show_chunk_borders;

@@ -5,6 +5,7 @@ pub mod atlas_more_items;
 pub mod atlas_tools;
 pub mod bars;
 pub mod builder;
+pub mod container_window;
 pub mod creative_inventory;
 pub mod font;
 pub mod icon_blocks;

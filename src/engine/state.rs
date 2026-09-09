@@ -1,7 +1,7 @@
 use bevy::math::Vec3;
 use bevy::prelude::Resource;
 use crate::engine::items::{ItemEntityManager, ItemType};
-use crate::engine::{Camera, Inventory, Player};
+use crate::engine::{BlockEntityManager, Camera, ContainerRef, ContainerSnapshot, Inventory, Player};
 use crate::render::types::Vertex;
 use crate::world::VoxelWorld;
 
@@ -38,6 +38,7 @@ pub struct RenderSnapshot {
     pub hovered_block: Option<(i32, i32, i32)>,
     pub show_chunk_borders: bool,
     pub profiler_piechart: Option<(Vec<super::debug::ResultField>, String)>,
+    pub container: Option<ContainerSnapshot>,
 }
 
 impl RenderSnapshot {
@@ -47,6 +48,8 @@ impl RenderSnapshot {
         camera: &Camera,
         inventory: &Inventory,
         items: &ItemEntityManager,
+        block_entities: &BlockEntityManager,
+        open_container: Option<ContainerRef>,
         force_mesh: bool,
     ) -> Self {
         let world_mesh = if force_mesh || world.needs_mesh_rebuild || world.cached_world_mesh.0.is_empty() {
@@ -59,6 +62,8 @@ impl RenderSnapshot {
         let (hotbar_items, storage_items, all_slots) = super::state_slots::extract_inventory_slots(inventory);
         let mut player_mesh = player.mesh();
         items.build_mesh(&mut player_mesh.0, &mut player_mesh.1);
+
+        let container = super::state_container::extract_container_snapshot(open_container, block_entities);
 
         Self {
             player_pos: player.position,
@@ -81,6 +86,7 @@ impl RenderSnapshot {
             hovered_block: None,
             show_chunk_borders: false,
             profiler_piechart: None,
+            container,
         }
     }
 }

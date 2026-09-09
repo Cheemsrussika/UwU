@@ -1,6 +1,6 @@
 use crate::world::block::BlockType;
 
-#[derive(bevy::prelude::Component, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(bevy::prelude::Component, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum ItemType {
     Block(BlockType),
     Apple,

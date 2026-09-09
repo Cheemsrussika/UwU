@@ -11,7 +11,7 @@ pub fn append_legacy_items(pixels: &mut Vec<u8>) {
 }
 
 pub fn append_survival_items(pixels: &mut Vec<u8>) {
-    // 39..=48: Coal, Stick, IronIngot, Porkchop, CookedPorkchop, Beef, CookedBeef, Mutton, CookedMutton, Leather
+    // 36..=45: Coal, Stick, IronIngot, Porkchop, CookedPorkchop, Beef, CookedBeef, Mutton, CookedMutton, Leather
     pixels.extend(load_atlas_layer(include_bytes!("../../assets/textures/item/coal.png"), None, [30, 30, 30, 255]));
     pixels.extend(load_atlas_layer(include_bytes!("../../assets/textures/item/stick.png"), None, [140, 100, 60, 255]));
     pixels.extend(load_atlas_layer(include_bytes!("../../assets/textures/item/iron_ingot.png"), None, [200, 200, 200, 255]));
@@ -23,7 +23,7 @@ pub fn append_survival_items(pixels: &mut Vec<u8>) {
     pixels.extend(load_atlas_layer(include_bytes!("../../assets/textures/item/cooked_mutton.png"), None, [160, 85, 55, 255]));
     pixels.extend(load_atlas_layer(include_bytes!("../../assets/textures/item/leather.png"), None, [160, 90, 50, 255]));
 
-    // 49..=54: WoodenPickaxe, StonePickaxe, IronPickaxe, WoodenSword, StoneSword, IronSword
+    // 46..=51: WoodenPickaxe, StonePickaxe, IronPickaxe, WoodenSword, StoneSword, IronSword
     pixels.extend(load_atlas_layer(include_bytes!("../../assets/textures/item/wooden_pickaxe.png"), None, [140, 100, 60, 255]));
     pixels.extend(load_atlas_layer(include_bytes!("../../assets/textures/item/stone_pickaxe.png"), None, [130, 130, 130, 255]));
     pixels.extend(load_atlas_layer(include_bytes!("../../assets/textures/item/iron_pickaxe.png"), None, [200, 200, 200, 255]));

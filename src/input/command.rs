@@ -9,6 +9,7 @@ pub enum LogicCommand {
     RotateCamera(f32),
     ZoomCamera(f32),
     ToggleInventory,
+    CloseInventory,
     UpdateCursor {
         aspect: f32,
         mouse_pos: (f32, f32),

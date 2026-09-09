@@ -67,7 +67,11 @@ pub fn handle_keyboard_input(app: &mut App, key: KeyCode, pressed: bool, event_l
                         app.game_state = super::game_state::GameState::LanLobby;
                     }
                     super::game_state::GameState::Playing => {
-                        app.game_state = super::game_state::GameState::Paused;
+                        if app.inventory_open {
+                            let _ = tx.send(LogicCommand::CloseInventory);
+                        } else {
+                            app.game_state = super::game_state::GameState::Paused;
+                        }
                     }
                     super::game_state::GameState::Paused => {
                         app.game_state = super::game_state::GameState::Playing;

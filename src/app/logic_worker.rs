@@ -23,15 +23,17 @@ impl LogicWorker {
             .spawn(move || {
                 let mut world = VoxelWorld::new();
                 if !crate::world::load_world_from_disk(&mut world) {
-                    world = VoxelWorld::new_flat(2);
+                    world = VoxelWorld::new_island();
                     crate::world::save_world_to_disk(&world);
                 }
                 *world_storage.lock().unwrap() = Some(world.storage.clone());
                 let autosaver = WorldAutosaver::start(world.storage.clone());
                 let (mut player, mut camera, mut inventory, mut items, mut tick_system) = super::worker_init::init_logic_entities(&world);
+                let mut block_entities = crate::engine::BlockEntityManager::new();
+                let mut open_container: Option<crate::engine::ContainerRef> = None;
 
                 player.held_item = inventory.hotbar[inventory.selected_slot].as_ref().map(|s| s.item);
-                let snap = RenderSnapshot::capture(&mut world, &player, &camera, &inventory, &items, true);
+                let snap = RenderSnapshot::capture(&mut world, &player, &camera, &inventory, &items, &block_entities, open_container, true);
                 *snapshot_shared.lock().unwrap() = Some(snap);
 
                 let (mut move_input, mut jump_input, mut sneak_input, mut sprint_input) = (Vec3::ZERO, false, false, false);
@@ -48,7 +50,7 @@ impl LogicWorker {
                     profiler.push("commands");
                     while let Ok(cmd) = cmd_rx.try_recv() {
                         super::worker_commands::handle_worker_command(
-                            cmd, &mut world, &mut player, &mut camera, &mut inventory, &mut items, &mut move_input,
+                            cmd, &mut world, &mut player, &mut camera, &mut inventory, &mut items, &mut block_entities, &mut open_container, &mut move_input,
                             &mut jump_input, &mut sneak_input, &mut sprint_input, &mut aim_yaw, &mut mouse_ndc, &mut aspect,
                             &mut current_hovered_block, &mut mining_state, &mut tick_system,
                             &mut show_chunk_borders, &mut piechart_state, &profiler, &block_tx,
@@ -64,6 +66,7 @@ impl LogicWorker {
                     profiler.pop();
 
                     profiler.push("physics");
+                    block_entities.tick(dt);
                     super::logic_step::step_physics_and_mining(
                         &mut player, &mut world, &mut items, &mut inventory,
                         &mut mining_state, &mut tick_system, move_input, jump_input, sneak_input, sprint_input, aim_yaw, dt, &block_tx,
@@ -76,7 +79,7 @@ impl LogicWorker {
                     profiler.push("snapshot");
                     super::worker_snapshot::update_snapshot(
                         &snapshot_shared, &mut world, &mut player, &camera, &inventory,
-                        &items, current_hovered_block, mouse_ndc, show_chunk_borders,
+                        &items, &block_entities, open_container, current_hovered_block, mouse_ndc, show_chunk_borders,
                         &mining_state, &profiler, &piechart_state,
                     );
                     profiler.pop();

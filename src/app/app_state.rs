@@ -33,6 +33,7 @@ pub struct App {
     pub block_event_rx: Option<mpsc::Receiver<crate::network::Packet>>,
     pub world_storage: Arc<Mutex<Option<Arc<ConcurrentChunkStorage>>>>,
     pub last_space_time: Option<Instant>,
+    pub inventory_open: bool,
 }
 
 impl App {
@@ -59,6 +60,7 @@ impl App {
             block_event_rx: None,
             world_storage: Arc::new(Mutex::new(None)),
             last_space_time: None,
+            inventory_open: false,
         }
     }
 }
