@@ -25,12 +25,9 @@ pub fn update_item_physics_and_lifetime(
             vel.0.y = (vel.0.y + 7.0 * dt).min(1.5);
             vel.0.x *= (1.0 - 4.0 * dt).max(0.0);
             vel.0.z *= (1.0 - 4.0 * dt).max(0.0);
-            let (fx, fz) = crate::world::compute_water_flow_vector(
-                pos.0.x.floor() as i32, pos.0.y.floor() as i32, pos.0.z.floor() as i32,
-                |x, y, z| voxel_world.get_block(x, y, z),
-            );
-            vel.0.x += fx * 3.5 * dt;
-            vel.0.z += fz * 3.5 * dt;
+let (fx, fz) = crate::world::compute_water_flow_vector(pos.0.x.floor() as i32, pos.0.y.floor() as i32, pos.0.z.floor() as i32, |x, y, z| voxel_world.get_block(x, y, z));
+            let fl = (fx * fx + fz * fz).sqrt();
+            if fl > 0.01 { vel.0.x += fx / fl * 5.6 * dt; vel.0.z += fz / fl * 5.6 * dt; }
         } else {
             if !grounded.0 { vel.0.y -= 12.0 * dt; }
             vel.0.x *= (1.0 - 2.0 * dt).max(0.0);

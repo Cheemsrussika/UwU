@@ -20,17 +20,16 @@ pub fn update_renderer_snapshot(
     let target = snapshot.player_pos + Vec3::new(0.0, 0.9, 0.0);
     let view = Mat4::look_at_rh(eye, target, Vec3::Y);
 
-    let ortho_size = snapshot.camera_distance * 0.6;
+    let d = snapshot.camera_distance;
+    let ortho_size = d * 0.6;
     let (hw, hh) = (ortho_size * aspect * 0.5, ortho_size * 0.5);
-    let proj = Mat4::orthographic_rh(-hw, hw, -hh, hh, 0.1, 200.0);
+    let proj = Mat4::orthographic_rh(-hw, hw, -hh, hh, -(d * 0.1).max(0.5), (d * 50.0).max(200.0));
     let view_proj = proj * view;
 
     let light_dir = Vec3::new(0.5, 1.2, 0.6).normalize();
-    let light_view = Mat4::look_at_rh(snapshot.player_pos + light_dir * 35.0, snapshot.player_pos, Vec3::Y);
-    let light_proj = Mat4::orthographic_rh(-32.0, 32.0, -32.0, 32.0, 1.0, 80.0);
-    let light_view_proj = light_proj * light_view;
+    let light_view_proj = Mat4::orthographic_rh(-32.0, 32.0, -32.0, 32.0, 1.0, 80.0) * Mat4::look_at_rh(snapshot.player_pos + light_dir * 35.0, snapshot.player_pos, Vec3::Y);
 
-    let uniform = CameraUniform { view_proj: view_proj.to_cols_array(), light_view_proj: light_view_proj.to_cols_array() };
+    let uniform = CameraUniform { view_proj: view_proj.to_cols_array(), light_view_proj: light_view_proj.to_cols_array(), camera_pos: [eye.x, eye.y, eye.z, 1.0], fog: [d * 1.0, d * 2.0, 0.0, 0.0] };
     r.queue.write_buffer(&r.camera_buffer, 0, bytemuck::cast_slice(&[uniform]));
 
     // Player buffers (local Steve + remote players)

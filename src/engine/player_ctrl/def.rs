@@ -10,6 +10,8 @@ pub struct Player {
     pub position: Vec3,
     pub velocity: Vec3,
     pub yaw: f32,
+    pub head_yaw: f32,
+    pub head_pitch: f32,
     pub on_ground: bool,
     pub in_water: bool,
     pub width: f32,
@@ -38,6 +40,7 @@ impl Player {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Self {
             position: Vec3::new(x, y, z), velocity: Vec3::ZERO, yaw: 0.0,
+            head_yaw: 0.0, head_pitch: 0.0,
             on_ground: false, in_water: false, width: 0.35, height: 1.8,
             health: 20.0, stamina: 100.0, hunger: 20.0, saturation: 5.0,
             exhaustion: 0.0, hunger_timer: 0.0, xp_level: 0, xp_points: 0,
@@ -50,7 +53,7 @@ impl Player {
 
     pub fn update_physics(
         &mut self, move_input: Vec3, jump: bool, sneak: bool, sprint: bool,
-        is_mining: bool, aim_yaw: Option<f32>, dt: f32, world: &VoxelWorld,
+        is_mining: bool, aim_dir: Option<Vec3>, dt: f32, world: &VoxelWorld,
     ) {
         self.is_sneaking = sneak;
         self.height = if sneak { 1.5 } else { 1.8 };
@@ -59,7 +62,7 @@ impl Player {
         } else {
             self.mining_swing = 0.0;
         }
-        super::physics::update_player_movement(self, move_input, jump, sprint, aim_yaw, dt, world);
+        super::physics::update_player_movement(self, move_input, jump, sprint, aim_dir, dt, world);
         super::stats_update::tick_player_stats(self, dt);
     }
 

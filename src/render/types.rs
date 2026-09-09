@@ -29,4 +29,6 @@ impl Vertex {
 pub struct CameraUniform {
     pub view_proj: [f32; 16],
     pub light_view_proj: [f32; 16],
+    pub camera_pos: [f32; 4],
+    pub fog: [f32; 4],
 }

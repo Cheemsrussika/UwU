@@ -70,15 +70,24 @@ mod tests {
         assert_eq!(player.height, 1.5);
 
         // 2. Aim yaw vs move input priority
-        // Stationary with aim_yaw -> turns to aim
+        // Stationary with aim_dir -> body turns to aim
         let aim = 1.25f32;
-        player.update_physics(Vec3::ZERO, false, false, false, false, Some(aim), 0.5, &world);
+        let aim_dir = Vec3::new(aim.sin(), 0.0, aim.cos());
+        player.update_physics(Vec3::ZERO, false, false, false, false, Some(aim_dir), 0.5, &world);
         assert!((player.yaw - aim).abs() < 0.2);
+        assert!((player.head_yaw - aim).abs() < 0.2);
 
-        // Moving towards Vec3::X -> yaw turns towards movement direction
+        // Head looks down at a block below -> head_pitch becomes positive
+        player.update_physics(Vec3::ZERO, false, false, false, false, Some(Vec3::new(0.0, -1.0, 0.0001)), 0.5, &world);
+        assert!(player.head_pitch > 0.5, "head must pitch down when aiming at a block below");
+
+        // Moving towards Vec3::X -> body AND head turn towards movement direction, not the mouse
         let move_dir = Vec3::new(1.0, 0.0, 0.0);
-        player.update_physics(move_dir, false, false, false, false, Some(aim), 0.05, &world);
         let expected_yaw = move_dir.x.atan2(move_dir.z);
+        for _ in 0..10 {
+            player.update_physics(move_dir, false, false, false, false, Some(aim_dir), 0.1, &world);
+        }
         assert_eq!(player.yaw, expected_yaw);
+        assert!((player.head_yaw - expected_yaw).abs() < 0.2, "head must turn to movement direction when moving");
     }
 }

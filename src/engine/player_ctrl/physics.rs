@@ -2,7 +2,7 @@ use bevy::math::Vec3;
 use super::def::Player;
 use crate::world::VoxelWorld;
 
-pub fn update_player_movement(p: &mut Player, move_input: Vec3, jump: bool, sprint: bool, aim_yaw: Option<f32>, dt: f32, world: &VoxelWorld) {
+pub fn update_player_movement(p: &mut Player, move_input: Vec3, jump: bool, sprint: bool, aim_dir: Option<Vec3>, dt: f32, world: &VoxelWorld) {
     let foot_block = world.get_block(p.position.x.floor() as i32, p.position.y.floor() as i32, p.position.z.floor() as i32);
     p.in_water = foot_block.is_fluid();
 
@@ -41,23 +41,20 @@ pub fn update_player_movement(p: &mut Player, move_input: Vec3, jump: bool, spri
     p.velocity.z += (target_vz - p.velocity.z) * accel.min(1.0);
 
     if p.in_water {
-        let (fx, fz) = crate::world::compute_water_flow_vector(
-            p.position.x.floor() as i32,
-            p.position.y.floor() as i32,
-            p.position.z.floor() as i32,
-            |x, y, z| world.get_block(x, y, z),
-        );
-        p.velocity.x += fx * 4.0 * dt;
-        p.velocity.z += fz * 4.0 * dt;
+        let (fx, fz) = crate::world::compute_water_flow_vector(p.position.x.floor() as i32, p.position.y.floor() as i32, p.position.z.floor() as i32, |x, y, z| world.get_block(x, y, z));
+        let fl = (fx * fx + fz * fz).sqrt();
+        if fl > 0.01 { p.velocity.x += fx / fl * 25.0 * dt; p.velocity.z += fz / fl * 25.0 * dt; }
     }
 
-    // Keyboard movement direction takes priority, otherwise smooth rotate to mouse aim
-    if move_input.length_squared() > 0.01 {
-        p.yaw = move_input.x.atan2(move_input.z);
-    } else if let Some(target_yaw) = aim_yaw {
-        let diff = (target_yaw - p.yaw + std::f32::consts::PI).rem_euclid(std::f32::consts::TAU) - std::f32::consts::PI;
-        p.yaw += diff * (10.0 * dt).min(1.0);
-    }
+    use std::f32::consts::{PI, TAU};
+    let turn = |c: f32, t: f32, k: f32| c + k * ((t - c + PI).rem_euclid(TAU) - PI);
+    let (aim_y, aim_p) = match aim_dir {
+        Some(ad) => (Some(ad.x.atan2(ad.z)), Some((-ad.y).atan2((ad.x * ad.x + ad.z * ad.z).sqrt()).clamp(-1.2, 1.2))),
+        None => (None, None),
+    };
+    p.yaw = if is_moving { move_input.x.atan2(move_input.z) } else if let Some(y) = aim_y { turn(p.yaw, y, (10.0 * dt).min(1.0)) } else { p.yaw };
+    let h_k = ((if is_moving || aim_y.is_some() { 12.0 } else { 4.0 }) * dt).min(1.0);
+    (p.head_yaw, p.head_pitch) = (turn(p.head_yaw, if is_moving { move_input.x.atan2(move_input.z) } else { aim_y.unwrap_or(p.yaw) }, h_k), if let Some(ap) = aim_p { p.head_pitch + (ap - p.head_pitch) * h_k } else { p.head_pitch * (1.0 - h_k) });
 
     let h_speed = (p.velocity.x * p.velocity.x + p.velocity.z * p.velocity.z).sqrt();
     if h_speed > 0.1 && p.on_ground {

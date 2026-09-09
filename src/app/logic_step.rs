@@ -13,12 +13,12 @@ pub fn step_physics_and_mining(
     jump_input: bool,
     sneak_input: bool,
     sprint_input: bool,
-    aim_yaw: Option<f32>,
+    aim_dir: Option<Vec3>,
     dt: f32,
     block_tx: &std::sync::mpsc::Sender<crate::network::Packet>,
 ) {
     let is_mining = mining_state.is_active;
-    player.update_physics(move_input, jump_input, sneak_input, sprint_input, is_mining, aim_yaw, dt, world);
+    player.update_physics(move_input, jump_input, sneak_input, sprint_input, is_mining, aim_dir, dt, world);
     items.update_with_held(dt, world, player.position, player.held_item);
     let picked = items.try_pickup(player.position, inventory);
     if !picked.is_empty() {

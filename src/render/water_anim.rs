@@ -45,14 +45,14 @@ impl WaterAnimator {
         frames
     }
 
-    pub fn get_frames(&self, tick: u64) -> (&[u8], &[u8]) {
-        let sf_idx = (tick as usize / 3) % self.still_frames.len();
-        let ff_idx = (tick as usize / 3) % self.flow_frames.len();
+    pub fn get_frames(&self, t: f32) -> (&[u8], &[u8]) {
+        let sf_idx = ((t * 20.0) as usize) % self.still_frames.len();
+        let ff_idx = ((t * 20.0) as usize) % self.flow_frames.len();
         (&self.still_frames[sf_idx], &self.flow_frames[ff_idx])
     }
 
-    pub fn update_water_texture(&self, queue: &wgpu::Queue, texture: &wgpu::Texture, tick: u64) {
-        let (sf, ff) = self.get_frames(tick);
+    pub fn update_water_texture(&self, queue: &wgpu::Queue, texture: &wgpu::Texture, t: f32) {
+        let (sf, ff) = self.get_frames(t);
         let layout = wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(256), rows_per_image: Some(64) };
         let size = wgpu::Extent3d { width: 64, height: 64, depth_or_array_layers: 1 };
         queue.write_texture(

@@ -70,7 +70,7 @@ pub async fn create_graphics_pipeline(window: Arc<Window>) -> InitializedPipelin
     let (shadow_texture_view, shadow_bind_group) = super::shadow_res::create_shadow_resources(&device);
     let (block_texture, _t_view, _t_sampler, t_bgl, texture_bind_group) = super::texture_res::create_texture_atlas_resources(&device, &queue);
 
-    let camera_uniform = CameraUniform { view_proj: Mat4::IDENTITY.to_cols_array(), light_view_proj: Mat4::IDENTITY.to_cols_array() };
+    let camera_uniform = CameraUniform { view_proj: Mat4::IDENTITY.to_cols_array(), light_view_proj: Mat4::IDENTITY.to_cols_array(), camera_pos: [0.0; 4], fog: [0.0; 4] };
     let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
         label: Some("Cam Buffer"),
         contents: bytemuck::cast_slice(&[camera_uniform]),

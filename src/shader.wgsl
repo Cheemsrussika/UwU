@@ -1,6 +1,8 @@
 struct Uniforms {
     view_proj: mat4x4<f32>,
     light_view_proj: mat4x4<f32>,
+    camera_pos: vec4<f32>,
+    fog: vec4<f32>,
 };
 
 @group(0) @binding(0)
@@ -29,6 +31,7 @@ struct VertexOutput {
     @location(1) uv: vec2<f32>,
     @location(2) @interpolate(flat) tex_layer: i32,
     @location(3) shadow_pos: vec4<f32>,
+    @location(4) world_pos: vec3<f32>,
 };
 
 @vertex
@@ -39,6 +42,7 @@ fn vs_main(model: VertexInput) -> VertexOutput {
     out.uv = model.uv;
     out.tex_layer = i32(model.tex_layer);
     out.shadow_pos = uniforms.light_view_proj * vec4<f32>(model.position, 1.0);
+    out.world_pos = model.position;
     return out;
 }
 
@@ -87,7 +91,10 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     } else if (in.tex_layer >= 18 && in.tex_layer <= 27) {
         alpha = 0.75;
     }
-    return vec4<f32>(tex_color.rgb * (ambient + direct), alpha);
+    let lit = tex_color.rgb * (ambient + direct);
+    let fogf = clamp((distance(in.world_pos, uniforms.camera_pos.xyz) - uniforms.fog.x) / max(uniforms.fog.y - uniforms.fog.x, 1e-4), 0.0, 1.0);
+    let fog_color = vec3<f32>(0.1, 0.12, 0.16);
+    return vec4<f32>(mix(lit, fog_color, fogf), alpha);
 }
 
 @vertex

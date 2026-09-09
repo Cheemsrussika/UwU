@@ -2,7 +2,7 @@ use winit::event_loop::ActiveEventLoop;
 use super::app_state::App;
 use super::game_state::GameState;
 
-pub fn render_frame(app: &mut App, event_loop: &ActiveEventLoop, _dt: f32) {
+pub fn render_frame(app: &mut App, event_loop: &ActiveEventLoop, dt: f32) {
     if app.game_state == GameState::Playing {
         super::render_movement::send_movement_inputs(app);
     }
@@ -33,13 +33,13 @@ pub fn render_frame(app: &mut App, event_loop: &ActiveEventLoop, _dt: f32) {
             GameState::Playing => {
                 if let Some(snapshot) = maybe_snapshot {
                     app.inventory_open = snapshot.inventory_open;
-                    r.update_from_snapshot(&snapshot, &app.remote_players);
+                    r.update_from_snapshot(&snapshot, &app.remote_players, dt);
                 }
             }
             GameState::Paused => {
                 if let Some(snapshot) = maybe_snapshot {
                     app.inventory_open = snapshot.inventory_open;
-                    r.update_from_snapshot(&snapshot, &app.remote_players);
+                    r.update_from_snapshot(&snapshot, &app.remote_players, dt);
                 }
                 r.update_menu(app.game_state, &[], &app.direct_ip_input, m_ndc);
             }

@@ -16,7 +16,7 @@ pub fn handle_worker_command(
     jump_input: &mut bool,
     sneak_input: &mut bool,
     sprint_input: &mut bool,
-    aim_yaw: &mut Option<f32>,
+    aim_dir: &mut Option<Vec3>,
     mouse_ndc: &mut (f32, f32),
     aspect_out: &mut f32,
     current_hovered: &mut Option<(i32, i32, i32)>,
@@ -62,7 +62,7 @@ pub fn handle_worker_command(
         LogicCommand::UpdateCursor { aspect, mouse_pos, screen_size } => {
             super::worker_cmd_cursor::handle_update_cursor(
                 aspect, mouse_pos, screen_size, aspect_out, mouse_ndc,
-                inventory.is_open, current_hovered, mining_state, camera, player, world, aim_yaw,
+                inventory.is_open, current_hovered, mining_state, camera, player, world, aim_dir,
             );
         }
         LogicCommand::MouseAction { button, is_pressed, aspect, mouse_pos, screen_size, is_shift } => {

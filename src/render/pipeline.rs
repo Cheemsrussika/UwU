@@ -1,7 +1,6 @@
 use std::sync::Arc;
 use wgpu::util::DeviceExt;
-use winit::dpi::PhysicalSize;
-use winit::window::Window;
+use winit::{dpi::PhysicalSize, window::Window};
 
 use super::hud_ui::HudRenderer;
 use super::types::Vertex;
@@ -33,7 +32,7 @@ pub struct Renderer {
     pub overlay_index_count: u32,
     pub block_texture: wgpu::Texture,
     pub water_anim: super::water_anim::WaterAnimator,
-    pub frame_count: u64,
+    pub anim_time: f32,
     pub size: PhysicalSize<u32>,
 }
 
@@ -42,9 +41,7 @@ impl Renderer {
         let size = window.inner_size();
         let p = super::pipelines::init::create_graphics_pipeline(window).await;
         let (d_v, d_i) = ([Vertex { position: [0.0; 3], normal: [0.0; 3], uv: [0.0; 2], tex_layer: 0.0 }], [0u32]);
-        let mk_b = |lbl, u, bytes: &[u8]| p.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some(lbl), contents: bytes, usage: u | wgpu::BufferUsages::COPY_DST,
-        });
+        let mk_b = |lbl, u, bytes: &[u8]| p.device.create_buffer_init(&wgpu::util::BufferInitDescriptor { label: Some(lbl), contents: bytes, usage: u | wgpu::BufferUsages::COPY_DST });
         let v_bytes = bytemuck::cast_slice(&d_v);
         let i_bytes = bytemuck::cast_slice(&d_i);
         let (wvb, pvb, ovb) = (mk_b("WVB", wgpu::BufferUsages::VERTEX, v_bytes), mk_b("PVB", wgpu::BufferUsages::VERTEX, v_bytes), mk_b("OVB", wgpu::BufferUsages::VERTEX, v_bytes));
@@ -60,7 +57,7 @@ impl Renderer {
             player_vertex_buffer: pvb, player_index_buffer: pib, player_index_count: 0,
             overlay_vertex_buffer: ovb, overlay_index_buffer: oib, overlay_index_count: 0,
             block_texture: p.block_texture, water_anim: super::water_anim::WaterAnimator::new(),
-            frame_count: 0, size,
+            anim_time: 0.0, size,
         }
     }
 
@@ -74,9 +71,9 @@ impl Renderer {
         }
     }
 
-    pub fn update_from_snapshot(&mut self, snapshot: &RenderSnapshot, remote_players: &[crate::network::RemotePlayer]) {
-        self.frame_count = self.frame_count.wrapping_add(1);
-        self.water_anim.update_water_texture(&self.queue, &self.block_texture, self.frame_count);
+    pub fn update_from_snapshot(&mut self, snapshot: &RenderSnapshot, remote_players: &[crate::network::RemotePlayer], dt: f32) {
+        self.anim_time += dt.min(0.1);
+        self.water_anim.update_water_texture(&self.queue, &self.block_texture, self.anim_time);
         super::pipelines::update::update_renderer_snapshot(self, snapshot, remote_players);
     }
 

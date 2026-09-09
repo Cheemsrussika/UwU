@@ -21,7 +21,7 @@ pub fn build_player_mesh(p: &Player) -> (Vec<Vertex>, Vec<u32>) {
     let leg_z = if p.is_sneaking { -0.25 } else { 0.0 };
     let hip_y = 1.40 + c_y - 0.72;
 
-    add_steve_box(&mut v, &mut idx, head_pivot, Vec3::new(0.5, 0.5, 0.5), Vec3::new(0.0, 0.25, 0.0), 0.0, p.yaw, p.position, head_uvs());
+    add_steve_box(&mut v, &mut idx, head_pivot, Vec3::new(0.5, 0.5, 0.5), Vec3::new(0.0, 0.25, 0.0), p.head_pitch, p.head_yaw, p.position, head_uvs());
     add_steve_box(&mut v, &mut idx, torso_pivot, Vec3::new(0.5, 0.72, 0.25), Vec3::new(0.0, -0.36, 0.0), torso_pitch, p.yaw, p.position, body_uvs());
 
     let r_shoulder = Vec3::new(-0.375, arm_y, 0.0);

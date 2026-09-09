@@ -28,7 +28,7 @@ impl Camera {
 
         let ortho_size = self.distance * 0.6;
         let (hw, hh) = (ortho_size * aspect * 0.5, ortho_size * 0.5);
-        let proj = Mat4::orthographic_rh(-hw, hw, -hh, hh, 0.1, 200.0);
+        let proj = Mat4::orthographic_rh(-hw, hw, -hh, hh, -(self.distance * 0.1).max(0.5), (self.distance * 50.0).max(200.0));
         proj * view
     }
 

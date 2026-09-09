@@ -37,7 +37,7 @@ impl LogicWorker {
                 *snapshot_shared.lock().unwrap() = Some(snap);
 
                 let (mut move_input, mut jump_input, mut sneak_input, mut sprint_input) = (Vec3::ZERO, false, false, false);
-                let (mut aim_yaw, mut mouse_ndc, mut current_hovered_block) = (None, (0.0f32, 0.0f32), None);
+                let (mut aim_dir, mut mouse_ndc, mut current_hovered_block) = (None, (0.0f32, 0.0f32), None);
                 let (mut profiler, mut piechart_state, mut show_chunk_borders) = (crate::engine::Profiler::new(), crate::engine::ProfilerPieChartState::new(), false);
                 let (mut mining_state, mut last_loop, mut aspect) = (crate::engine::MiningState::new(), Instant::now(), 16.0 / 9.0);
 
@@ -51,7 +51,7 @@ impl LogicWorker {
                     while let Ok(cmd) = cmd_rx.try_recv() {
                         super::worker_commands::handle_worker_command(
                             cmd, &mut world, &mut player, &mut camera, &mut inventory, &mut items, &mut block_entities, &mut open_container, &mut move_input,
-                            &mut jump_input, &mut sneak_input, &mut sprint_input, &mut aim_yaw, &mut mouse_ndc, &mut aspect,
+                            &mut jump_input, &mut sneak_input, &mut sprint_input, &mut aim_dir, &mut mouse_ndc, &mut aspect,
                             &mut current_hovered_block, &mut mining_state, &mut tick_system,
                             &mut show_chunk_borders, &mut piechart_state, &profiler, &block_tx,
                         );
@@ -69,7 +69,7 @@ impl LogicWorker {
                     block_entities.tick(dt);
                     super::logic_step::step_physics_and_mining(
                         &mut player, &mut world, &mut items, &mut inventory,
-                        &mut mining_state, &mut tick_system, move_input, jump_input, sneak_input, sprint_input, aim_yaw, dt, &block_tx,
+                        &mut mining_state, &mut tick_system, move_input, jump_input, sneak_input, sprint_input, aim_dir, dt, &block_tx,
                     );
                     super::mining_helper::update_continuous_mining(
                         &mut mining_state, &world, &player, &camera, &inventory, aspect, mouse_ndc, &mut current_hovered_block,
