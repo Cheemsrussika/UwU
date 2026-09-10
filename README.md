@@ -1,5 +1,3 @@
-
-```markdown
 # 🎮 UwU - Project Zomboid Style Voxel Engine
 
 A **Rust-based voxel game engine** inspired by Project Zomboid's isometric perspective, featuring a modular architecture built on [Bevy ECS](https://bevyengine.org/), WGPU graphics, and multiplayer support over LAN.
@@ -472,5 +470,5 @@ See the repository for license information.
 - 📦 [Crates.io](https://crates.io)
 - 📚 [Docs](https://docs.bevyengine.org/)
 - 🎮 [Game Development](https://gamedev.stackexchange.com/)
-```
+
 
