@@ -1,4 +1,3 @@
-I don't have write permissions to the repository. Since you own the repository, you can create the README directly. Here's the complete, comprehensive README content you can copy and paste:
 
 ```markdown
 # 🎮 UwU - Project Zomboid Style Voxel Engine
